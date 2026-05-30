@@ -76,20 +76,27 @@ exports.getMatchedJobs = async (req, res) => {
     }
 
     if (req.query.type) {
-      query.type = req.query.type;
-    } else if (req.query.opportunityType) {
-      if (req.query.opportunityType === 'job') {
+      if (req.query.type === 'Jobs-Only') {
         query.type = { $ne: 'Internship' };
-      } else if (req.query.opportunityType === 'internship') {
-        query.type = 'Internship';
+      } else {
+        query.type = req.query.type;
       }
     }
+
 
     if (req.query.location) {
       query.location = { $regex: req.query.location, $options: 'i' };
     }
 
     const jobs = await Job.find(query);
+
+    // Automatically trigger JSearch background crawl if jobs in database are low (non-blocking)
+    if (jobs.length < 15) {
+      const { runBackgroundSync } = require('../utils/jsearchFetch');
+      const searchTerms = req.query.search || (req.query.type === 'Internship' ? 'Software Engineering Intern India' : 'Software Engineer India');
+      runBackgroundSync(searchTerms);
+    }
+
     
     if (!student.resumeText || jobs.length === 0) {
       // Default match score of 0

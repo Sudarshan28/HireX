@@ -1,6 +1,6 @@
 const Job = require('../models/Job');
 const Student = require('../models/Student');
-const { fetchJSearchJobs } = require('../utils/jsearchFetch');
+const { fetchJSearchJobs, runBackgroundSync } = require('../utils/jsearchFetch');
 const axios = require('axios');
 const { calculateMatchPercentage } = require('../utils/matcherHelper');
 
@@ -22,14 +22,13 @@ exports.getAllJobs = async (req, res) => {
     }
 
     if (req.query.type) {
-      query.type = req.query.type;
-    } else if (req.query.opportunityType) {
-      if (req.query.opportunityType === 'job') {
+      if (req.query.type === 'Jobs-Only') {
         query.type = { $ne: 'Internship' };
-      } else if (req.query.opportunityType === 'internship') {
-        query.type = 'Internship';
+      } else {
+        query.type = req.query.type;
       }
     }
+
 
     if (req.query.location) {
       query.location = { $regex: req.query.location, $options: 'i' };
@@ -107,7 +106,6 @@ exports.getAllJobs = async (req, res) => {
   }
 };
 
-// Fetch external jobs via JSearch API
 exports.fetchExternalJobs = async (req, res) => {
   try {
     const customQuery = req.query.query;
@@ -119,74 +117,7 @@ exports.fetchExternalJobs = async (req, res) => {
     });
 
     // Run sync in the background
-    (async () => {
-      const queries = [];
-      if (customQuery) {
-        queries.push(customQuery);
-      }
-      
-      const bulkQueries = [
-        // Jobs
-        'Software Engineer Bangalore',
-        'Software Engineer Noida',
-        'Software Engineer Pune',
-        'Software Engineer Hyderabad',
-        'React Developer India',
-        'Node.js Developer India',
-        'Python Developer India',
-        'Full Stack Developer India',
-        'MERN Stack Developer India',
-        'Frontend Engineer India',
-        'Backend Engineer Noida',
-        'DevOps Engineer India',
-        // Internships
-        'Software Engineering Intern Bangalore',
-        'Web Development Internship India',
-        'React Developer Intern India',
-        'Node.js Intern India',
-        'Python Developer Internship India',
-        'Full Stack Intern India',
-        'Frontend Intern India',
-        'Backend Internship Noida',
-        'Data Science Intern India',
-        'Android Developer Intern India',
-        'DevOps Intern India',
-        'QA Software Intern India'
-      ];
-
-      
-      // Merge unique queries
-      bulkQueries.forEach(q => {
-        if (!queries.includes(q)) {
-          queries.push(q);
-        }
-      });
-
-      let totalSaved = 0;
-      for (const q of queries) {
-        try {
-          console.log(`[JSearch Background] Syncing query: "${q}"...`);
-          // Fetch 10 pages of results (100 jobs) for each query
-          const fetchedJobs = await fetchJSearchJobs(q, 10);
-          
-          let savedCount = 0;
-          for (const jobData of fetchedJobs) {
-            // Check for duplicate applyUrl
-            const exists = await Job.findOne({ applyUrl: jobData.applyUrl });
-            if (!exists) {
-              const job = new Job(jobData);
-              await job.save();
-              savedCount++;
-            }
-          }
-          totalSaved += savedCount;
-          console.log(`[JSearch Background] Saved ${savedCount} new jobs for query: "${q}"`);
-        } catch (err) {
-          console.error(`[JSearch Background] Failed sync for query "${q}":`, err.message);
-        }
-      }
-      console.log(`[JSearch Background] Sync complete! Total new jobs saved: ${totalSaved}`);
-    })();
+    runBackgroundSync(customQuery);
   } catch (error) {
     console.error('Error syncing external jobs:', error);
     if (!res.headersSent) {
@@ -194,6 +125,7 @@ exports.fetchExternalJobs = async (req, res) => {
     }
   }
 };
+
 
 // Get single job details
 exports.getJobDetails = async (req, res) => {

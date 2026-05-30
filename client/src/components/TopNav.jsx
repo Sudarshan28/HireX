@@ -131,8 +131,16 @@ const TopNav = () => {
             onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); setShowSettings(false); }}
             className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center font-display text-xs font-bold text-gray-700 hover:border-gray-400 transition-all focus:outline-none"
           >
-            {user?.name?.slice(0, 2).toUpperCase() || 'HX'}
+            {(() => {
+              if (!user?.name) return 'HX';
+              const parts = user.name.trim().split(/\s+/);
+              if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+              }
+              return parts[0].slice(0, 2).toUpperCase();
+            })()}
           </button>
+
 
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-30 font-body text-xs">

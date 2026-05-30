@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Student = require('../models/Student');
 const Recruiter = require('../models/Recruiter');
+const { runBackgroundSync } = require('../utils/jsearchFetch');
 
 // Register Student
 exports.registerStudent = async (req, res) => {
@@ -120,6 +121,9 @@ exports.loginStudent = async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Trigger JSearch sync in the background automatically (non-blocking)
+    runBackgroundSync();
+
     return res.status(200).json({
       success: true,
       token,
@@ -161,6 +165,9 @@ exports.loginRecruiter = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    // Trigger JSearch sync in the background automatically (non-blocking)
+    runBackgroundSync();
 
     return res.status(200).json({
       success: true,

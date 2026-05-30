@@ -74,8 +74,15 @@ const Sidebar = () => {
       {/* User profile / Logout */}
       <div className="p-4 border-t border-gray-200 bg-gray-50">
         <div className="flex items-center gap-3 mb-4 px-2">
-          <div className="w-10 h-10 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center text-gray-700 font-bold">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          <div className="w-10 h-10 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center text-gray-700 font-bold text-sm">
+            {(() => {
+              if (!user?.name) return 'U';
+              const parts = user.name.trim().split(/\s+/);
+              if (parts.length >= 2) {
+                return (parts[0][0] + parts[1][0]).toUpperCase();
+              }
+              return parts[0].slice(0, 2).toUpperCase();
+            })()}
           </div>
           <div className="overflow-hidden">
             <h4 className="text-sm font-display font-bold text-gray-900 truncate">{user?.name || 'User'}</h4>

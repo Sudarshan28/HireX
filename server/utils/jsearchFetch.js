@@ -68,4 +68,80 @@ async function fetchJSearchJobs(query = "software engineer India", numPages = 10
   }
 }
 
-module.exports = { fetchJSearchJobs };
+const Job = require('../models/Job');
+
+async function runBackgroundSync(customQuery = null) {
+  // Fire and forget, runs inside async IIFE
+  (async () => {
+    try {
+      const queries = [];
+      if (customQuery) {
+        queries.push(customQuery);
+      }
+      
+      const bulkQueries = [
+        // Jobs
+        'Software Engineer Bangalore',
+        'Software Engineer Noida',
+        'Software Engineer Pune',
+        'Software Engineer Hyderabad',
+        'React Developer India',
+        'Node.js Developer India',
+        'Python Developer India',
+        'Full Stack Developer India',
+        'MERN Stack Developer India',
+        'Frontend Engineer India',
+        'Backend Engineer Noida',
+        'DevOps Engineer India',
+        // Internships
+        'Software Engineering Intern Bangalore',
+        'Web Development Internship India',
+        'React Developer Intern India',
+        'Node.js Intern India',
+        'Python Developer Internship India',
+        'Full Stack Intern India',
+        'Frontend Intern India',
+        'Backend Internship Noida',
+        'Data Science Intern India',
+        'Android Developer Intern India',
+        'DevOps Intern India',
+        'QA Software Intern India'
+      ];
+      
+      bulkQueries.forEach(q => {
+        if (!queries.includes(q)) {
+          queries.push(q);
+        }
+      });
+
+      console.log(`[AutoSync Background] Starting background crawler for ${queries.length} streams...`);
+      let totalSaved = 0;
+      for (const q of queries) {
+        try {
+          // Introduce a 1.5-second delay to respect RapidAPI requests-per-second limits
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          const fetchedJobs = await fetchJSearchJobs(q, 3); // 3 pages (30 opportunities) per query
+          let savedCount = 0;
+          for (const jobData of fetchedJobs) {
+            const exists = await Job.findOne({ applyUrl: jobData.applyUrl });
+            if (!exists) {
+              const job = new Job(jobData);
+              await job.save();
+              savedCount++;
+            }
+          }
+          totalSaved += savedCount;
+          console.log(`[AutoSync Background] Crawled "${q}": Saved ${savedCount} new items`);
+        } catch (err) {
+          console.error(`[AutoSync Background] Error syncing "${q}":`, err.message);
+        }
+      }
+      console.log(`[AutoSync Background] Complete! Added ${totalSaved} new records.`);
+    } catch (err) {
+      console.error('[AutoSync Background Master] Failed:', err.message);
+    }
+  })();
+}
+
+module.exports = { fetchJSearchJobs, runBackgroundSync };
+

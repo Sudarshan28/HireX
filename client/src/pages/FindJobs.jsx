@@ -23,7 +23,6 @@ const FindJobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-  const [opportunityType, setOpportunityType] = useState('all');
   const [sortByMatch, setSortByMatch] = useState('true');
 
   const fetchJobs = async () => {
@@ -41,7 +40,6 @@ const FindJobs = () => {
           search: searchTerm,
           location: locationFilter,
           type: typeFilter,
-          opportunityType,
           sortByMatch
         }
       });
@@ -77,7 +75,7 @@ const FindJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [searchTerm, locationFilter, typeFilter, opportunityType, sortByMatch]);
+  }, [searchTerm, locationFilter, typeFilter, sortByMatch]);
 
   const handleApply = async (jobId) => {
     try {
@@ -97,7 +95,6 @@ const FindJobs = () => {
     setSearchTerm('');
     setLocationFilter('');
     setTypeFilter('');
-    setOpportunityType('all');
     setSortByMatch('true');
   };
 
@@ -114,17 +111,8 @@ const FindJobs = () => {
               <h1 className="text-3xl font-display font-bold text-gray-900 mb-1">FIND OPPORTUNITIES</h1>
               <p className="text-gray-500 font-body text-sm">Browse openings and view AI vector-based matching scores.</p>
             </div>
-            
-            <button
-              onClick={handleSyncJSearch}
-              disabled={syncing}
-              className="flex items-center gap-2 py-2.5 px-4 rounded text-white transition-all font-display font-bold text-xs shadow-sm hover:opacity-95"
-              style={{ backgroundColor: '#202A36' }}
-            >
-              <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-              <span>{syncing ? 'FETCHING CHANNELS...' : 'PULL JSEARCH EXTERNAL JOBS'}</span>
-            </button>
           </div>
+
 
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Filter sidebar */}
@@ -169,13 +157,15 @@ const FindJobs = () => {
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-300 rounded px-3 py-2 text-xs text-gray-900 focus:border-gray-400 transition-colors"
                 >
-                  <option value="">All Types</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Internship">Internship</option>
-                  <option value="Remote">Remote</option>
+                  <option value="">All Opportunities</option>
+                  <option value="Jobs-Only">Jobs Only (Exclude Internships)</option>
+                  <option value="Internship">Internships Only</option>
+                  <option value="Full-time">Full-time Only</option>
+                  <option value="Part-time">Part-time Only</option>
+                  <option value="Remote">Remote Only</option>
                 </select>
               </div>
+
 
               {/* Match Sorting toggle */}
               <div>
@@ -213,45 +203,9 @@ const FindJobs = () => {
             </aside>
 
             {/* Jobs feed */}
-            <div className="flex-1 space-y-6">
-              {/* High-level category switcher */}
-              <div className="flex border-b border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setOpportunityType('all')}
-                  className={`py-3 px-6 text-sm font-display font-bold border-b-2 transition-all duration-200 ${
-                    opportunityType === 'all'
-                      ? 'border-[#202A36] text-[#202A36]'
-                      : 'border-transparent text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  All Opportunities
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpportunityType('job')}
-                  className={`py-3 px-6 text-sm font-display font-bold border-b-2 transition-all duration-200 ${
-                    opportunityType === 'job'
-                      ? 'border-[#202A36] text-[#202A36]'
-                      : 'border-transparent text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  Jobs Only
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpportunityType('internship')}
-                  className={`py-3 px-6 text-sm font-display font-bold border-b-2 transition-all duration-200 ${
-                    opportunityType === 'internship'
-                      ? 'border-[#202A36] text-[#202A36]'
-                      : 'border-transparent text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  Internships Only
-                </button>
-              </div>
-
+            <div className="flex-1">
               {loading ? (
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className="h-64 rounded-xl bg-white border border-gray-200 animate-pulse shadow-sm" />
