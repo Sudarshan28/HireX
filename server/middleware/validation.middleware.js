@@ -1,4 +1,4 @@
-const { body, validationResult } = require('express-validator');
+const { body, query, validationResult } = require('express-validator');
 
 // Middleware to handle validation error output
 const validateResult = (req, res, next) => {
@@ -117,3 +117,56 @@ exports.validatePostJob = [
     }),
   validateResult
 ];
+
+exports.validateUpdateProfile = [
+  body('name')
+    .optional()
+    .trim()
+    .notEmpty().withMessage('Name cannot be empty')
+    .isLength({ max: 50 }).withMessage('Name must not exceed 50 characters')
+    .escape(),
+  body('university')
+    .optional()
+    .trim()
+    .notEmpty().withMessage('University cannot be empty')
+    .isLength({ max: 100 }).withMessage('University must not exceed 100 characters')
+    .escape(),
+  body('graduationYear')
+    .optional()
+    .isInt({ min: 2000, max: 2100 }).withMessage('Please provide a valid graduation year'),
+  body('skills')
+    .optional()
+    .isArray().withMessage('Skills must be an array of strings'),
+  body('skills.*')
+    .optional()
+    .trim()
+    .isLength({ max: 50 }).withMessage('Each skill must not exceed 50 characters')
+    .escape(),
+  validateResult
+];
+
+exports.validateUpdateApplicantStatus = [
+  body('jobId')
+    .optional()
+    .trim()
+    .isMongoId().withMessage('Invalid Job ID format'),
+  body('studentId')
+    .optional()
+    .trim()
+    .isMongoId().withMessage('Invalid Student ID format'),
+  body('status')
+    .trim()
+    .notEmpty().withMessage('Status is required')
+    .isIn(['Pending', 'Shortlisted', 'Hired', 'Rejected']).withMessage('Invalid applicant status value'),
+  validateResult
+];
+
+exports.validateFetchExternal = [
+  query('query')
+    .optional()
+    .trim()
+    .isLength({ max: 100 }).withMessage('Search query must not exceed 100 characters')
+    .matches(/^[a-zA-Z0-9\s,\.\-\+]+$/).withMessage('Search query contains invalid characters'),
+  validateResult
+];
+

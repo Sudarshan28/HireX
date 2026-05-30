@@ -20,6 +20,8 @@ services:
         sync: false
       - key: CLIENT_URL
         sync: false
+      - key: PYTHON_MATCHER_URL
+        sync: false
 
   - type: static
     name: hirex-frontend
@@ -29,3 +31,14 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false
+
+  - type: web
+    name: hirex-matcher
+    env: python
+    rootDir: matcher
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    envVars:
+      - key: PORT
+        value: 5001
+

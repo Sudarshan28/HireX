@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const recruiterController = require('../controllers/recruiterController');
 const verifyToken = require('../middleware/authMiddleware');
-const { validatePostJob } = require('../middleware/validation.middleware');
+const { validatePostJob, validateUpdateApplicantStatus } = require('../middleware/validation.middleware');
 
 router.get('/dashboard', verifyToken, recruiterController.getDashboardStats);
 router.get('/dashboard/stats', verifyToken, recruiterController.getDashboardStats);
@@ -18,10 +18,11 @@ router.delete('/jobs/:id', verifyToken, recruiterController.deleteJob);
 router.get('/applicants/:jobId', verifyToken, recruiterController.getApplicants);
 router.get('/jobs/:jobId/applicants', verifyToken, recruiterController.getApplicants);
 
-router.put('/applicant-status', verifyToken, recruiterController.updateApplicantStatus);
-router.put('/jobs/:jobId/applicants/:studentId', verifyToken, recruiterController.updateApplicantStatus);
+router.put('/applicant-status', verifyToken, validateUpdateApplicantStatus, recruiterController.updateApplicantStatus);
+router.put('/jobs/:jobId/applicants/:studentId', verifyToken, validateUpdateApplicantStatus, recruiterController.updateApplicantStatus);
 router.get('/candidates', verifyToken, recruiterController.getCandidates);
 router.get('/interviews', verifyToken, recruiterController.getInterviews);
 router.get('/analytics', verifyToken, recruiterController.getAnalytics);
 
 module.exports = router;
+
