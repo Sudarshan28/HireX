@@ -16,6 +16,99 @@ const companies = [
   'Vercel', 'Netlify', 'Cloudflare', 'Fastly', 'DigitalOcean', 'Linode', 'AWS', 'GCP', 'Azure', 'Heroku'
 ];
 
+const companyUrls = {
+  'Google': 'https://careers.google.com',
+  'Microsoft': 'https://careers.microsoft.com',
+  'Meta': 'https://www.metacareers.com',
+  'Amazon': 'https://www.amazon.jobs',
+  'Apple': 'https://www.apple.com/careers',
+  'Netflix': 'https://jobs.netflix.com',
+  'Tesla': 'https://www.tesla.com/careers',
+  'Adobe': 'https://careers.adobe.com',
+  'Nvidia': 'https://www.nvidia.com/en-us/about-nvidia/careers',
+  'Intel': 'https://www.intel.com/content/www/us/en/jobs/locations/india.html',
+  'Uber': 'https://www.uber.com/careers',
+  'Lyft': 'https://www.lyft.com/careers',
+  'Airbnb': 'https://careers.airbnb.com',
+  'Stripe': 'https://stripe.com/jobs',
+  'Paypal': 'https://www.paypal.com/us/webapps/mpp/jobs',
+  'Square': 'https://block.xyz/careers',
+  'Salesforce': 'https://www.salesforce.com/company/careers',
+  'Slack': 'https://slack.com/careers',
+  'Zoom': 'https://careers.zoom.us',
+  'Spotify': 'https://www.lifeatspotify.com',
+  'Shopify': 'https://www.shopify.com/careers',
+  'Twitter': 'https://careers.twitter.com',
+  'Pinterest': 'https://newsroom.pinterest.com/en/careers',
+  'Snapchat': 'https://www.snap.com/en-US/careers',
+  'Tiktok': 'https://careers.tiktok.com',
+  'Oracle': 'https://www.oracle.com/careers',
+  'IBM': 'https://www.ibm.com/careers',
+  'Cisco': 'https://www.cisco.com/c/en/us/about/careers.html',
+  'HP': 'https://jobs.hp.com',
+  'Dell': 'https://jobs.dell.com',
+  'Flipkart': 'https://www.flipkartcareers.com',
+  'Paytm': 'https://careers.paytm.com',
+  'PhonePe': 'https://www.phonepe.com/careers',
+  'Razorpay': 'https://razorpay.com/jobs',
+  'CRED': 'https://cred.club/careers',
+  'Swiggy': 'https://careers.swiggy.com',
+  'Zomato': 'https://www.zomato.com/careers',
+  'Ola': 'https://www.ola.in/careers',
+  'Meesho': 'https://www.meesho.careers',
+  'InMobi': 'https://www.inmobi.com/company/careers',
+  'TCS': 'https://www.tcs.com/careers',
+  'Infosys': 'https://www.infosys.com/careers.html',
+  'Wipro': 'https://careers.wipro.com',
+  'Cognizant': 'https://careers.cognizant.com',
+  'HCL': 'https://www.hcltech.com/careers',
+  'Tech Mahindra': 'https://careers.techmahindra.com',
+  'L&T InfoTech': 'https://www.lntinfotech.com/careers',
+  'Capgemini': 'https://www.capgemini.com/careers',
+  'Accenture': 'https://www.accenture.com/careers',
+  'Deloitte': 'https://www2.deloitte.com/ui/en/careers/careers.html',
+  'MathWorks': 'https://www.mathworks.com/company/jobs.html',
+  'ARM': 'https://careers.arm.com',
+  'Kigen': 'https://kigen.com/careers',
+  'UnitedHealth Group': 'https://careers.unitedhealthgroup.com',
+  'Samsung': 'https://www.samsung.com/us/careers',
+  'Sony': 'https://www.sony.com/en/SonyInfo/Careers',
+  'Panasonic': 'https://www.panasonic.com/global/corporate/careers.html',
+  'LG': 'https://www.lg.com/global/careers',
+  'HTC': 'https://www.htc.com/us/careers',
+  'Asus': 'https://www.asus.com/us/about-asus/careers',
+  'GitHub': 'https://github.com/careers',
+  'GitLab': 'https://about.gitlab.com/jobs',
+  'Atlassian': 'https://www.atlassian.com/company/careers',
+  'Datadog': 'https://www.datadoghq.com/careers',
+  'Splunk': 'https://www.splunk.com/en_us/careers.html',
+  'New Relic': 'https://newrelic.com/about/careers',
+  'Dynatrace': 'https://www.dynatrace.com/company/careers',
+  'Elastic': 'https://www.elastic.co/about/careers',
+  'MongoDB': 'https://www.mongodb.com/careers',
+  'Redis': 'https://redis.com/company/careers',
+  'Confluent': 'https://www.confluent.io/careers',
+  'Snowflake': 'https://www.snowflake.com/careers',
+  'Cloudera': 'https://www.cloudera.com/about/careers.html',
+  'Palantir': 'https://www.palantir.com/careers',
+  'Twilio': 'https://www.twilio.com/company/careers',
+  'SendGrid': 'https://sendgrid.com/careers',
+  'Postman': 'https://www.postman.com/careers',
+  'PostgreSQL': 'https://www.postgresql.org/about/jobs',
+  'Docker': 'https://www.docker.com/careers',
+  'Kubernetes': 'https://kubernetes.io/community/careers',
+  'Vercel': 'https://vercel.com/careers',
+  'Netlify': 'https://www.netlify.com/careers',
+  'Cloudflare': 'https://www.cloudflare.com/careers',
+  'Fastly': 'https://www.fastly.com/about/careers',
+  'DigitalOcean': 'https://www.digitalocean.com/careers',
+  'Linode': 'https://www.linode.com/careers',
+  'AWS': 'https://www.amazon.jobs',
+  'GCP': 'https://careers.google.com',
+  'Azure': 'https://careers.microsoft.com',
+  'Heroku': 'https://www.salesforce.com/company/careers'
+};
+
 const locations = [
   'Bangalore, Karnataka, IN', 'Pune, Maharashtra, IN', 'Noida, Uttar Pradesh, IN', 'Gurgaon, Haryana, IN',
   'Hyderabad, Telangana, IN', 'Mumbai, Maharashtra, IN', 'Chennai, Tamil Nadu, IN', 'Kolkata, West Bengal, IN',
@@ -162,25 +255,25 @@ const backfill = async () => {
   await connectDB();
   console.log('Initiating internship backfill engine...');
 
+  // 1. Delete all previous JSearch internships in the database to start clean
+  const deleteResult = await Job.deleteMany({ type: 'Internship', source: 'jsearch' });
+  console.log(`Deleted ${deleteResult.deletedCount} existing JSearch internships.`);
+
   const workModes = ['Remote', 'Hybrid', 'On-site'];
   const newJobs = [];
 
-  // Let's generate 1050 internships (350 Remote, 350 Hybrid, 350 On-site)
   const countPerMode = 350;
 
   for (const mode of workModes) {
     console.log(`Generating ${countPerMode} ${mode} internships...`);
     for (let i = 0; i < countPerMode; i++) {
-      // Pick random values
       const company = companies[Math.floor(Math.random() * companies.length)];
       const location = locations[Math.floor(Math.random() * locations.length)];
       const publisher = publishers[Math.floor(Math.random() * publishers.length)];
       const template = roleTemplates[Math.floor(Math.random() * roleTemplates.length)];
 
       const isRemote = mode === 'Remote';
-      
-      const title = `${template.title} (${company})`;
-      const applyUrl = `https://careers.${company.toLowerCase().replace(/[^a-z0-9]/g, '')}.com/jobs/apply-${Math.floor(Math.random() * 100000)}`;
+      const applyUrl = companyUrls[company] || `https://www.google.com/search?q=${encodeURIComponent(company + ' careers')}`;
 
       newJobs.push({
         title: template.title,
@@ -193,7 +286,7 @@ const backfill = async () => {
         isRemote,
         applyUrl,
         salary: `${Math.floor(Math.random() * 20) + 10}k - ${Math.floor(Math.random() * 20) + 30}k INR / Month`,
-        postedAt: new Date(Date.now() - Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000), // within last 10 days
+        postedAt: new Date(Date.now() - Math.floor(Math.random() * 10) * 24 * 60 * 60 * 1000),
         source: 'jsearch',
         employerLogo: '',
         qualifications: template.qualifications,

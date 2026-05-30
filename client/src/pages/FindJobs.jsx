@@ -451,16 +451,23 @@ const FindJobs = () => {
             {/* Actions */}
             <div className="border-t border-gray-100 pt-4">
               {selectedJob.source === 'jsearch' ? (
-                <a
-                  href={selectedJob.applyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded text-white font-display font-bold text-sm shadow-sm transition-all hover:opacity-95"
-                  style={{ backgroundColor: '#202A36' }}
+                <button
+                  onClick={() => {
+                    handleApply(selectedJob._id);
+                    window.open(selectedJob.applyUrl, '_blank', 'noopener,noreferrer');
+                    setSelectedJob(null);
+                  }}
+                  disabled={appliedJobs.includes(selectedJob._id)}
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded font-display font-bold text-sm transition-all shadow-sm ${
+                    appliedJobs.includes(selectedJob._id)
+                      ? 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'text-white hover:opacity-95'
+                  }`}
+                  style={!appliedJobs.includes(selectedJob._id) ? { backgroundColor: '#202A36' } : {}}
                 >
-                  <span>APPLY</span>
+                  <span>{appliedJobs.includes(selectedJob._id) ? 'APPLICATION TRACKED' : 'APPLY'}</span>
                   <ExternalLink className="w-4 h-4" />
-                </a>
+                </button>
               ) : (
                 <button
                   onClick={() => {

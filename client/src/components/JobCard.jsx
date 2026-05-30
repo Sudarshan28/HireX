@@ -97,15 +97,23 @@ const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
         )}
 
         {isJSearch ? (
-          <a
-            href={job.applyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded bg-transparent border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 transition-all font-display font-bold text-sm shadow-sm"
+          <button
+            onClick={() => {
+              if (!isApplied) {
+                onApply(job._id);
+                window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+              }
+            }}
+            disabled={isApplied}
+            className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded transition-all font-display font-bold text-sm border ${
+              isApplied
+                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-transparent border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm'
+            }`}
           >
-            <span>APPLY</span>
+            <span>{isApplied ? 'APPLICATION TRACKED' : 'APPLY'}</span>
             <ExternalLink className="w-4 h-4 text-gray-400" />
-          </a>
+          </button>
         ) : (
           <button
             onClick={() => !isApplied && onApply(job._id)}
