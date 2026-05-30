@@ -7,16 +7,16 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const migrate = async () => {
   await connectDB();
   console.log('Migrating job categories and work modes...');
-  const jobs = await Job.find({});
-  console.log(`Found ${jobs.length} jobs to scan.`);
+  const rawJobs = await Job.find({}).lean();
+  console.log(`Found ${rawJobs.length} raw jobs in database.`);
   
   let updatedCount = 0;
-  for (const job of jobs) {
-    const titleLower = (job.title || '').toLowerCase();
-    const descLower = (job.description || '').toLowerCase();
+  for (const rawJob of rawJobs) {
+    const titleLower = (rawJob.title || '').toLowerCase();
+    const descLower = (rawJob.description || '').toLowerCase();
     
     // 1. Detect Category
-    let category = job.type;
+    let category = rawJob.type;
     if (!category || category === 'Remote') {
       category = 'Full-time';
     }
@@ -28,10 +28,10 @@ const migrate = async () => {
     }
     
     // 2. Detect Work Mode
-    let workType = job.workType;
-    let isRemote = job.isRemote;
+    let workType = rawJob.workType;
+    let isRemote = rawJob.isRemote || false;
     
-    if (job.isRemote || titleLower.includes('remote') || descLower.includes('remote')) {
+    if (rawJob.isRemote || titleLower.includes('remote') || descLower.includes('remote')) {
       workType = 'Remote';
       isRemote = true;
     } else if (titleLower.includes('hybrid') || descLower.includes('hybrid')) {
@@ -42,12 +42,26 @@ const migrate = async () => {
       }
     }
     
-    // Update if changed
-    if (job.type !== category || job.workType !== workType || job.isRemote !== isRemote) {
-      job.type = category;
-      job.workType = workType;
-      job.isRemote = isRemote;
-      await job.save();
+    // Check if the database record is missing 'workType' or has incorrect values
+    const needsUpdate = (
+      rawJob.type !== category || 
+      rawJob.workType !== workType || 
+      rawJob.isRemote !== isRemote ||
+      rawJob.workType === undefined ||
+      rawJob.workType === null
+    );
+    
+    if (needsUpdate) {
+      await Job.updateOne(
+        { _id: rawJob._id },
+        { 
+          $set: { 
+            type: category, 
+            workType: workType, 
+            isRemote: isRemote 
+          } 
+        }
+      );
       updatedCount++;
     }
   }

@@ -340,7 +340,7 @@ const FindJobs = () => {
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-3.5 shadow-sm">
                 <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Work Mode</span>
-                <span className="text-xs font-bold text-gray-900">{selectedJob.isRemote ? 'Remote / WFH' : 'On-site'}</span>
+                <span className="text-xs font-bold text-gray-900">{selectedJob.workType || (selectedJob.isRemote ? 'Remote / WFH' : 'On-site')}</span>
               </div>
               <div className="bg-white border border-gray-200 rounded-lg p-3.5 shadow-sm">
                 <span className="text-[10px] font-mono text-gray-500 uppercase block mb-1">Platform</span>
