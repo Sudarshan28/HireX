@@ -1,0 +1,176 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate, Link } from 'react-router-dom';
+import { Bell, Settings, User as UserIcon, LogOut, Check, Shield } from 'lucide-react';
+
+const TopNav = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const notificationsRef = useRef(null);
+  const settingsRef = useRef(null);
+  const profileRef = useRef(null);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  // Close dropdowns on outside clicks
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setShowSettings(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const dummyNotifications = user?.role === 'recruiter'
+    ? [
+        { id: 1, title: 'Welcome to HireX!', desc: 'You can now post new job vacancies and check candidates who applied to them.', time: 'Just now' },
+        { id: 2, title: 'Candidates directory active', desc: 'Browse matched candidate profile details in the Talent Pool page.', time: '1 hour ago' }
+      ]
+    : [
+        { id: 1, title: 'Welcome to HireX!', desc: 'Please complete your student profile and upload a PDF resume to match with jobs.', time: 'Just now' },
+        { id: 2, title: 'Job matching active', desc: 'Browse available software engineering job opportunities and check compatibility.', time: '1 hour ago' }
+      ];
+
+  return (
+    <header className="h-16 fixed top-0 left-64 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10">
+      <div>
+        <h2 className="font-display text-sm font-bold text-gray-900">
+          {getGreeting()}, <span className="text-gray-800 font-semibold">{user?.name || 'Guest'}</span>
+        </h2>
+        {user?.role === 'recruiter' && user?.company && (
+          <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+            {user.company}
+          </span>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4">
+        {/* Notification Icon & Dropdown */}
+        <div className="relative" ref={notificationsRef}>
+          <button 
+            onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); setShowProfileMenu(false); }}
+            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors relative"
+          >
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500"></span>
+          </button>
+
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-30 font-body text-xs">
+              <div className="px-4 py-2 border-b border-gray-100 font-bold text-gray-800 flex justify-between">
+                <span>Notifications</span>
+                <span className="text-[10px] text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded font-mono">Active</span>
+              </div>
+              <div className="max-h-60 overflow-y-auto">
+                {dummyNotifications.map(n => (
+                  <div key={n.id} className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 space-y-1">
+                    <h4 className="font-semibold text-gray-900">{n.title}</h4>
+                    <p className="text-gray-500 text-[11px] leading-relaxed">{n.desc}</p>
+                    <span className="text-[10px] text-gray-400 font-mono block">{n.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Settings Icon & Dropdown */}
+        <div className="relative" ref={settingsRef}>
+          <button 
+            onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); setShowProfileMenu(false); }}
+            className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+
+          {showSettings && (
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-30 font-body text-xs text-gray-700 space-y-3">
+              <h4 className="font-bold border-b border-gray-100 pb-2 mb-2 text-gray-800">System Preferences</h4>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" defaultChecked className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
+                <span>Enable email notifications</span>
+              </label>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" defaultChecked className="rounded border-gray-300 text-emerald-500 focus:ring-emerald-500" />
+                <span>Auto-calibrate similarity vectors</span>
+              </label>
+              <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-[10px] text-gray-400 font-mono">
+                <span>Theme: Premium Light</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Profile Avatar & Dropdown */}
+        <div className="relative" ref={profileRef}>
+          <button 
+            onClick={() => { setShowProfileMenu(!showProfileMenu); setShowNotifications(false); setShowSettings(false); }}
+            className="w-8 h-8 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center font-display text-xs font-bold text-gray-700 hover:border-gray-400 transition-all focus:outline-none"
+          >
+            {user?.name?.slice(0, 2).toUpperCase() || 'HX'}
+          </button>
+
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-30 font-body text-xs">
+              <div className="px-4 py-3 border-b border-gray-100 space-y-1">
+                <h4 className="font-bold text-gray-900 capitalize">{user?.name}</h4>
+                <p className="text-gray-500 text-[11px] truncate">{user?.email}</p>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <Shield className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-[10px] font-mono capitalize bg-gray-100 px-1.5 py-0.5 rounded text-gray-600">
+                    {user?.role} Portal
+                  </span>
+                </div>
+              </div>
+
+              {user?.role === 'student' && (
+                <Link 
+                  to="/student/profile" 
+                  onClick={() => setShowProfileMenu(false)}
+                  className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-gray-700 hover:text-gray-900 transition-colors flex items-center gap-2"
+                >
+                  <UserIcon className="w-4 h-4 text-gray-400" />
+                  <span>My Profile</span>
+                </Link>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-red-500 hover:bg-red-50/20 transition-colors flex items-center gap-2 border-t border-gray-100"
+              >
+                <LogOut className="w-4 h-4 text-red-400" />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default TopNav;

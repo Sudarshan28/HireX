@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #F9FAFB;      /* bg-gray-50 */
+  --bg-surface: #FFFFFF;      /* white surfaces */
+  --bg-card: #FFFFFF;
+  --accent-primary: #202A36;  /* deep premium navy/charcoal */
+  --accent-secondary: #374151; /* gray-700 */
+  --text-primary: #111827;    /* gray-900 */
+  --text-muted: #6B7280;      /* gray-500 */
+  --danger: #EF4444;          /* red-500 */
+  --warning: #F59E0B;         /* amber-500 */
+  --border: #E5E7EB;          /* gray-200 */
+  --accent-glow: #10B981;     /* emerald green */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar for premium light theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Base input and outline removals */
+input:focus, button:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-primary) !important;
+}
+
+/* Toastify premiumOverrides */
+.Toastify__toast-theme--dark, .Toastify__toast {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  font-family: 'Inter', sans-serif !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+.Toastify__progress-bar--success {
+  background: var(--accent-primary) !important;
+}
+.Toastify__progress-bar--error {
+  background: var(--danger) !important;
+}
+.Toastify__toast-icon {
+  fill: var(--accent-primary) !important;
+}
