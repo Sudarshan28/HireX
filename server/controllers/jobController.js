@@ -29,6 +29,9 @@ exports.getAllJobs = async (req, res) => {
       }
     }
 
+    if (req.query.workType && req.query.workType !== 'All') {
+      query.workType = req.query.workType;
+    }
 
     if (req.query.location) {
       query.location = { $regex: req.query.location, $options: 'i' };

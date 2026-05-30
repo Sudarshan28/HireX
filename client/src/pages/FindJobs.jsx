@@ -23,6 +23,7 @@ const FindJobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [workTypeFilter, setWorkTypeFilter] = useState('');
   const [sortByMatch, setSortByMatch] = useState('true');
 
   const fetchJobs = async () => {
@@ -40,6 +41,7 @@ const FindJobs = () => {
           search: searchTerm,
           location: locationFilter,
           type: typeFilter,
+          workType: workTypeFilter,
           sortByMatch
         }
       });
@@ -75,7 +77,7 @@ const FindJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [searchTerm, locationFilter, typeFilter, sortByMatch]);
+  }, [searchTerm, locationFilter, typeFilter, workTypeFilter, sortByMatch]);
 
   const handleApply = async (jobId) => {
     try {
@@ -95,6 +97,7 @@ const FindJobs = () => {
     setSearchTerm('');
     setLocationFilter('');
     setTypeFilter('');
+    setWorkTypeFilter('');
     setSortByMatch('true');
   };
 
@@ -149,20 +152,32 @@ const FindJobs = () => {
                 />
               </div>
 
-              {/* Job type dropdown */}
+              {/* Opportunity Category */}
               <div>
-                <label className="block text-xs font-mono text-gray-500 uppercase mb-2">Work Mode</label>
+                <label className="block text-xs font-mono text-gray-500 uppercase mb-2">Opportunity Category</label>
                 <select
                   value={typeFilter}
                   onChange={(e) => setTypeFilter(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-300 rounded px-3 py-2 text-xs text-gray-900 focus:border-gray-400 transition-colors"
                 >
-                  <option value="">All Opportunities</option>
-                  <option value="Jobs-Only">Jobs Only (Exclude Internships)</option>
+                  <option value="">All Openings</option>
+                  <option value="Jobs-Only">Jobs Only</option>
                   <option value="Internship">Internships Only</option>
-                  <option value="Full-time">Full-time Only</option>
-                  <option value="Part-time">Part-time Only</option>
-                  <option value="Remote">Remote Only</option>
+                </select>
+              </div>
+
+              {/* Work Mode */}
+              <div>
+                <label className="block text-xs font-mono text-gray-500 uppercase mb-2">Work Mode</label>
+                <select
+                  value={workTypeFilter}
+                  onChange={(e) => setWorkTypeFilter(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-300 rounded px-3 py-2 text-xs text-gray-900 focus:border-gray-400 transition-colors"
+                >
+                  <option value="">All Work Modes</option>
+                  <option value="Remote">Remote</option>
+                  <option value="Hybrid">Hybrid</option>
+                  <option value="On-site">On-site</option>
                 </select>
               </div>
 

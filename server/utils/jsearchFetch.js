@@ -30,16 +30,25 @@ async function fetchJSearchJobs(query = "software engineer India", numPages = 10
       const skills = [...new Set([...apiSkills, ...detected])];
 
       const titleLower = (job.job_title || '').toLowerCase();
+      const descLower = (description || '').toLowerCase();
       const employmentType = job.job_employment_type ? job.job_employment_type.toLowerCase() : '';
+      
+      // 1. Detect Category
       let type = 'Full-time';
       if (employmentType.includes('intern') || titleLower.includes('intern') || titleLower.includes('internship')) {
         type = 'Internship';
-      } else if (employmentType.includes('part')) {
+      } else if (employmentType.includes('part') || titleLower.includes('part-time')) {
         type = 'Part-time';
-      } else if (job.job_is_remote || employmentType.includes('remote')) {
-        type = 'Remote';
-      } else if (employmentType.includes('full')) {
-        type = 'Full-time';
+      }
+
+      // 2. Detect Work Mode
+      let workType = 'On-site';
+      let isRemote = false;
+      if (job.job_is_remote || titleLower.includes('remote') || descLower.includes('remote') || employmentType.includes('remote')) {
+        workType = 'Remote';
+        isRemote = true;
+      } else if (titleLower.includes('hybrid') || descLower.includes('hybrid') || employmentType.includes('hybrid')) {
+        workType = 'Hybrid';
       }
 
       return {
@@ -48,6 +57,7 @@ async function fetchJSearchJobs(query = "software engineer India", numPages = 10
         location,
         description,
         type,
+        workType,
         applyUrl:         selectBestApplyLink(job),
         salary,
         postedAt:         job.job_posted_at_datetime_utc ? new Date(job.job_posted_at_datetime_utc) : new Date(),
@@ -58,8 +68,9 @@ async function fetchJSearchJobs(query = "software engineer India", numPages = 10
         responsibilities: job.job_highlights?.Responsibilities || [],
         benefits:         job.job_highlights?.Benefits || [],
         publisher:        job.job_publisher || '',
-        isRemote:         job.job_is_remote || false
+        isRemote
       };
+
 
     });
   } catch (error) {
@@ -118,9 +129,10 @@ async function runBackgroundSync(customQuery = null) {
       let totalSaved = 0;
       for (const q of queries) {
         try {
-          // Introduce a 1.5-second delay to respect RapidAPI requests-per-second limits
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          const fetchedJobs = await fetchJSearchJobs(q, 3); // 3 pages (30 opportunities) per query
+          // Introduce a 2.5-second delay to respect RapidAPI requests-per-second limits
+          await new Promise(resolve => setTimeout(resolve, 2500));
+          const fetchedJobs = await fetchJSearchJobs(q, 10); // 10 pages (100 opportunities) per query
+
           let savedCount = 0;
           for (const jobData of fetchedJobs) {
             const exists = await Job.findOne({ applyUrl: jobData.applyUrl });
