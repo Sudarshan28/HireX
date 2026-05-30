@@ -64,6 +64,17 @@ const StudentDashboard = () => {
     }
   };
 
+  const handleStatusChange = async (jobId, newStatus) => {
+    try {
+      const res = await api.put(`/student/applications/${jobId}/status`, { status: newStatus });
+      if (res.data.success) {
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error('Failed to update application status:', error);
+    }
+  };
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
@@ -217,15 +228,24 @@ const StudentDashboard = () => {
                         <td className="py-3.5 text-gray-500">{app.company}</td>
                         <td className="py-3.5 text-xs font-mono text-gray-500">{app.location || 'Remote'}</td>
                         <td className="py-3.5">
-                          <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
-                            app.status.toLowerCase() === 'hired'
-                              ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
-                              : app.status.toLowerCase() === 'rejected'
-                              ? 'bg-red-50 border-red-100 text-red-700'
-                              : 'bg-blue-50 border-blue-100 text-blue-700'
-                          }`}>
-                            {app.status}
-                          </span>
+                          <select
+                            value={app.status}
+                            onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                            className={`text-[10px] font-mono font-bold px-2 py-1 rounded border outline-none cursor-pointer transition-all ${
+                              app.status === 'Hired'
+                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                : app.status === 'Rejected'
+                                ? 'bg-red-50 border-red-200 text-red-700'
+                                : app.status === 'Shortlisted'
+                                ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                : 'bg-blue-50 border-blue-200 text-blue-700'
+                            }`}
+                          >
+                            <option value="Pending" className="bg-white text-gray-800">Pending</option>
+                            <option value="Shortlisted" className="bg-white text-gray-800">Interviewing</option>
+                            <option value="Hired" className="bg-white text-gray-800">Hired</option>
+                            <option value="Rejected" className="bg-white text-gray-800">Rejected</option>
+                          </select>
                         </td>
                       </tr>
                     ))}

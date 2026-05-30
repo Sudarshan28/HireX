@@ -21,6 +21,6 @@ router.get('/profile', verifyToken, studentController.getProfile);
 router.put('/profile', verifyToken, validateUpdateProfile, studentController.updateProfile);
 
 router.get('/dashboard/stats', verifyToken, studentController.getDashboardStats);
-
+router.put('/applications/:jobId/status', verifyToken, studentController.updateApplicationStatus);
 
 module.exports = router;

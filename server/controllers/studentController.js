@@ -428,3 +428,36 @@ exports.getDashboardStats = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// Update status of student's application manually
+exports.updateApplicationStatus = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const { status } = req.body; // 'Pending', 'Shortlisted', 'Rejected', 'Hired'
+
+    if (!['Pending', 'Shortlisted', 'Rejected', 'Hired'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status value' });
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    const applicant = job.applicants.find(a => a.student.toString() === req.user.id.toString());
+    if (!applicant) {
+      return res.status(400).json({ success: false, message: 'Application record not found for this candidate' });
+    }
+
+    applicant.status = status;
+    await job.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Application status updated to ${status}`
+    });
+  } catch (error) {
+    console.error('Error updating application status:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
