@@ -77,6 +77,12 @@ exports.getMatchedJobs = async (req, res) => {
 
     if (req.query.type) {
       query.type = req.query.type;
+    } else if (req.query.opportunityType) {
+      if (req.query.opportunityType === 'job') {
+        query.type = { $ne: 'Internship' };
+      } else if (req.query.opportunityType === 'internship') {
+        query.type = 'Internship';
+      }
     }
 
     if (req.query.location) {

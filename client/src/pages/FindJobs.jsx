@@ -23,6 +23,7 @@ const FindJobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [opportunityType, setOpportunityType] = useState('all');
   const [sortByMatch, setSortByMatch] = useState('true');
 
   const fetchJobs = async () => {
@@ -40,6 +41,7 @@ const FindJobs = () => {
           search: searchTerm,
           location: locationFilter,
           type: typeFilter,
+          opportunityType,
           sortByMatch
         }
       });
@@ -75,7 +77,7 @@ const FindJobs = () => {
 
   useEffect(() => {
     fetchJobs();
-  }, [searchTerm, locationFilter, typeFilter, sortByMatch]);
+  }, [searchTerm, locationFilter, typeFilter, opportunityType, sortByMatch]);
 
   const handleApply = async (jobId) => {
     try {
@@ -95,6 +97,7 @@ const FindJobs = () => {
     setSearchTerm('');
     setLocationFilter('');
     setTypeFilter('');
+    setOpportunityType('all');
     setSortByMatch('true');
   };
 
@@ -210,7 +213,44 @@ const FindJobs = () => {
             </aside>
 
             {/* Jobs feed */}
-            <div className="flex-1">
+            <div className="flex-1 space-y-6">
+              {/* High-level category switcher */}
+              <div className="flex border-b border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setOpportunityType('all')}
+                  className={`py-3 px-6 text-sm font-display font-bold border-b-2 transition-all duration-200 ${
+                    opportunityType === 'all'
+                      ? 'border-[#202A36] text-[#202A36]'
+                      : 'border-transparent text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  All Opportunities
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpportunityType('job')}
+                  className={`py-3 px-6 text-sm font-display font-bold border-b-2 transition-all duration-200 ${
+                    opportunityType === 'job'
+                      ? 'border-[#202A36] text-[#202A36]'
+                      : 'border-transparent text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  Jobs Only
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpportunityType('internship')}
+                  className={`py-3 px-6 text-sm font-display font-bold border-b-2 transition-all duration-200 ${
+                    opportunityType === 'internship'
+                      ? 'border-[#202A36] text-[#202A36]'
+                      : 'border-transparent text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  Internships Only
+                </button>
+              </div>
+
               {loading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {[1, 2, 3, 4].map(i => (

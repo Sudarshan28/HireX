@@ -23,6 +23,12 @@ exports.getAllJobs = async (req, res) => {
 
     if (req.query.type) {
       query.type = req.query.type;
+    } else if (req.query.opportunityType) {
+      if (req.query.opportunityType === 'job') {
+        query.type = { $ne: 'Internship' };
+      } else if (req.query.opportunityType === 'internship') {
+        query.type = 'Internship';
+      }
     }
 
     if (req.query.location) {
@@ -109,7 +115,7 @@ exports.fetchExternalJobs = async (req, res) => {
     // Return response immediately to prevent client timeout and keep the UI responsive
     res.status(200).json({
       success: true,
-      message: 'Background synchronization stream initiated! 1,000+ jobs are being fetched and will populate your feed momentarily.'
+      message: 'Background synchronization stream initiated! 1,000+ jobs and internships are being fetched and will populate your feed momentarily.'
     });
 
     // Run sync in the background
@@ -120,6 +126,7 @@ exports.fetchExternalJobs = async (req, res) => {
       }
       
       const bulkQueries = [
+        // Jobs
         'Software Engineer Bangalore',
         'Software Engineer Noida',
         'Software Engineer Pune',
@@ -131,8 +138,22 @@ exports.fetchExternalJobs = async (req, res) => {
         'MERN Stack Developer India',
         'Frontend Engineer India',
         'Backend Engineer Noida',
-        'DevOps Engineer India'
+        'DevOps Engineer India',
+        // Internships
+        'Software Engineering Intern Bangalore',
+        'Web Development Internship India',
+        'React Developer Intern India',
+        'Node.js Intern India',
+        'Python Developer Internship India',
+        'Full Stack Intern India',
+        'Frontend Intern India',
+        'Backend Internship Noida',
+        'Data Science Intern India',
+        'Android Developer Intern India',
+        'DevOps Intern India',
+        'QA Software Intern India'
       ];
+
       
       // Merge unique queries
       bulkQueries.forEach(q => {
