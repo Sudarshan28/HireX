@@ -89,6 +89,22 @@ const StudentDashboard = () => {
               if (prevApp && prevApp.status !== nextApp.status) {
                 const statusColor = nextApp.status === 'Hired' ? '🟢' : nextApp.status === 'Rejected' ? '🔴' : '🟡';
                 toast.info(`${statusColor} Application status for ${nextApp.title} at ${nextApp.company} updated to ${nextApp.status}!`);
+                
+                // Add to notification drawer
+                const saved = localStorage.getItem('notifications');
+                let list = [];
+                if (saved) {
+                  try { list = JSON.parse(saved); } catch (e) { list = []; }
+                }
+                list.unshift({
+                  id: Date.now() + Math.random(),
+                  title: `Application Update: ${nextApp.company}`,
+                  desc: `Your application status for ${nextApp.title} has been updated to ${nextApp.status}.`,
+                  time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                  unread: true
+                });
+                localStorage.setItem('notifications', JSON.stringify(list.slice(0, 50)));
+                window.dispatchEvent(new Event('new_notification'));
               }
             });
           }

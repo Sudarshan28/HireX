@@ -44,15 +44,56 @@ const TopNav = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const dummyNotifications = user?.role === 'recruiter'
-    ? [
-        { id: 1, title: 'Welcome to HireX!', desc: 'You can now post new job vacancies and check candidates who applied to them.', time: 'Just now' },
-        { id: 2, title: 'Candidates directory active', desc: 'Browse matched candidate profile details in the Talent Pool page.', time: '1 hour ago' }
-      ]
-    : [
-        { id: 1, title: 'Welcome to HireX!', desc: 'Please complete your student profile and upload a PDF resume to match with jobs.', time: 'Just now' },
-        { id: 2, title: 'Job matching active', desc: 'Browse available software engineering job opportunities and check compatibility.', time: '1 hour ago' }
-      ];
+  const [notificationsList, setNotificationsList] = useState([]);
+
+  const studentDefaults = [
+    { id: 'def1', title: 'Welcome to HireX!', desc: 'Please complete your student profile and upload a PDF resume to match with jobs.', time: 'Just now', unread: true },
+    { id: 'def2', title: 'Job matching active', desc: 'Browse available software engineering job opportunities and check compatibility.', time: '1 hour ago', unread: false }
+  ];
+
+  const recruiterDefaults = [
+    { id: 'def1', title: 'Welcome to HireX!', desc: 'You can now post new job vacancies and check candidates who applied to them.', time: 'Just now', unread: true },
+    { id: 'def2', title: 'Candidates directory active', desc: 'Browse matched candidate profile details in the Talent Pool page.', time: '1 hour ago', unread: false }
+  ];
+
+  useEffect(() => {
+    const loadNotifs = () => {
+      const saved = localStorage.getItem('notifications');
+      if (saved) {
+        setNotificationsList(JSON.parse(saved));
+      } else {
+        const defaults = user?.role === 'recruiter' ? recruiterDefaults : studentDefaults;
+        setNotificationsList(defaults);
+        localStorage.setItem('notifications', JSON.stringify(defaults));
+      }
+    };
+
+    loadNotifs();
+
+    window.addEventListener('new_notification', loadNotifs);
+    window.addEventListener('storage', loadNotifs);
+    const interval = setInterval(loadNotifs, 2000);
+
+    return () => {
+      window.removeEventListener('new_notification', loadNotifs);
+      window.removeEventListener('storage', loadNotifs);
+      clearInterval(interval);
+    };
+  }, [user]);
+
+  const handleToggleNotifications = () => {
+    const nextShow = !showNotifications;
+    setShowNotifications(nextShow);
+    setShowSettings(false);
+    setShowProfileMenu(false);
+    
+    if (nextShow) {
+      const updated = notificationsList.map(n => ({ ...n, unread: false }));
+      setNotificationsList(updated);
+      localStorage.setItem('notifications', JSON.stringify(updated));
+      window.dispatchEvent(new Event('new_notification'));
+    }
+  };
 
   return (
     <header className="h-16 fixed top-0 left-64 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10">
@@ -71,11 +112,13 @@ const TopNav = () => {
         {/* Notification Icon & Dropdown */}
         <div className="relative" ref={notificationsRef}>
           <button 
-            onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); setShowProfileMenu(false); }}
+            onClick={handleToggleNotifications}
             className="p-2 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors relative"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500"></span>
+            {notificationsList.some(n => n.unread) && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            )}
           </button>
 
           {showNotifications && (
@@ -85,13 +128,22 @@ const TopNav = () => {
                 <span className="text-[10px] text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded font-mono">Active</span>
               </div>
               <div className="max-h-60 overflow-y-auto">
-                {dummyNotifications.map(n => (
-                  <div key={n.id} className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 space-y-1">
-                    <h4 className="font-semibold text-gray-900">{n.title}</h4>
-                    <p className="text-gray-500 text-[11px] leading-relaxed">{n.desc}</p>
-                    <span className="text-[10px] text-gray-400 font-mono block">{n.time}</span>
+                {notificationsList.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-gray-400 font-mono">
+                    NO NEW NOTIFICATIONS
                   </div>
-                ))}
+                ) : (
+                  notificationsList.map(n => (
+                    <div key={n.id} className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 space-y-1 transition-colors ${n.unread ? 'bg-[#202A36]/5' : ''}`}>
+                      <h4 className="font-semibold text-gray-900 flex justify-between items-center">
+                        <span>{n.title}</span>
+                        {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>}
+                      </h4>
+                      <p className="text-gray-500 text-[11px] leading-relaxed">{n.desc}</p>
+                      <span className="text-[10px] text-gray-400 font-mono block">{n.time}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
