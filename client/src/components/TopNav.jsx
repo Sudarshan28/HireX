@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Bell, Settings, User as UserIcon, LogOut, Check, Shield } from 'lucide-react';
+import { Bell, Settings, User as UserIcon, LogOut, Check, Shield, Menu } from 'lucide-react';
 
 const TopNav = () => {
   const { user, logout } = useAuth();
@@ -98,19 +98,29 @@ const TopNav = () => {
   };
 
   return (
-    <header className="h-16 fixed top-0 left-64 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-30">
-      <div>
-        <h2 className="font-display text-sm font-bold text-gray-900">
-          {getGreeting()}, <span className="text-gray-800 font-semibold">{user?.name || 'Guest'}</span>
-        </h2>
-        {user?.role === 'recruiter' && user?.company && (
-          <span className="text-[10px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
-            {user.company}
-          </span>
-        )}
+    <header className="h-16 fixed top-0 left-0 md:left-64 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-8 z-30">
+      <div className="flex items-center gap-3">
+        {/* Hamburger Menu Icon for Mobile */}
+        <button
+          onClick={() => window.dispatchEvent(new Event('toggle_sidebar'))}
+          className="p-2 -ml-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors md:hidden"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+
+        <div>
+          <h2 className="font-display text-xs md:text-sm font-bold text-gray-900 leading-tight">
+            {getGreeting()}, <span className="text-gray-800 font-semibold">{user?.name || 'Guest'}</span>
+          </h2>
+          {user?.role === 'recruiter' && user?.company && (
+            <span className="text-[9px] md:text-[10px] font-mono text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 block md:inline-block w-max mt-0.5 md:mt-0">
+              {user.company}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 md:gap-4">
         {/* Notification Icon & Dropdown */}
         <div className="relative" ref={notificationsRef}>
           <button 

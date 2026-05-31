@@ -56,7 +56,7 @@ const Support = () => {
       <Sidebar />
       <TopNav />
 
-      <main className="pl-64 pt-16 min-h-screen">
+      <main className="pl-0 md:pl-64 pt-16 min-h-screen">
         <div className="p-8 space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
