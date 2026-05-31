@@ -16,7 +16,18 @@ exports.uploadResume = async (req, res) => {
     }
 
     const fileBuffer = fs.readFileSync(req.file.path);
-    const parsedPdf = await pdfParse(fileBuffer);
+    let parsedPdf;
+    try {
+      parsedPdf = await pdfParse(fileBuffer);
+    } catch (pdfErr) {
+      console.warn('pdf-parse failed:', pdfErr.message);
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({
+        success: false,
+        message: 'The uploaded PDF file could not be parsed. Please ensure it is a valid, readable PDF document (not scanned or password-protected).'
+      });
+    }
+
     const resumeText = parsedPdf.text || '';
     
     // Validate that the uploaded document is a valid resume or CV
@@ -36,9 +47,12 @@ exports.uploadResume = async (req, res) => {
     const textLength = resumeText.trim().length;
     if (textLength < 400 || textLength > 15000) {
       try { fs.unlinkSync(req.file.path); } catch (e) {}
+      const reason = textLength < 400 
+        ? `too little readable text (found ${textLength} characters). If it is a scanned resume or image PDF, please re-save or export it as a searchable PDF with selectable text.`
+        : `too much text (${textLength} characters, max is 15,000). Please shorten your resume.`;
       return res.status(400).json({ 
         success: false, 
-        message: `Validation failed: The document text length (${textLength} characters) is outside the expected range (400 - 15,000 characters) for a resume.` 
+        message: `Validation failed: The document contains ${reason}` 
       });
     }
 
