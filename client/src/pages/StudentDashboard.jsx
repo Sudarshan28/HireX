@@ -16,7 +16,7 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { FileText, Award, XCircle, CheckCircle, Clock, Calendar } from 'lucide-react';
+import { FileText, Award, XCircle, CheckCircle, Clock, Calendar, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import TopNav from '../components/TopNav';
 import StatCard from '../components/StatCard';
@@ -55,7 +55,7 @@ const StudentDashboard = () => {
       // Fetch recent applications
       const appsRes = await api.get('/student/applied-jobs');
       if (appsRes.data.success) {
-        setRecentApplications(appsRes.data.data.slice(0, 5));
+        setRecentApplications(appsRes.data.data);
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -72,6 +72,18 @@ const StudentDashboard = () => {
       }
     } catch (error) {
       console.error('Failed to update application status:', error);
+    }
+  };
+
+  const handleUntrack = async (jobId) => {
+    if (!window.confirm('Are you sure you want to untrack this application? This will remove it from your dashboard.')) return;
+    try {
+      const res = await api.delete(`/student/applications/${jobId}`);
+      if (res.data.success) {
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error('Failed to untrack application:', error);
     }
   };
 
@@ -203,54 +215,66 @@ const StudentDashboard = () => {
             </div>
 
             {/* Recent applications table */}
-            <div className="bg-white border border-gray-200 shadow-sm rounded-xl p-6 lg:col-span-2 overflow-x-auto">
+            <div className="bg-white border border-gray-200 shadow-sm rounded-xl p-6 lg:col-span-2 flex flex-col h-[400px]">
               <h3 className="text-lg font-display font-bold text-gray-900 mb-6">RECENT APPLICATIONS</h3>
               {recentApplications.length === 0 ? (
-                <div className="h-[220px] flex flex-col items-center justify-center text-center">
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <span className="text-xs font-mono text-gray-500 border border-gray-200 bg-gray-50 px-4 py-2 rounded">
                     NO ACTIVE DATA STREAMS DETECTED
                   </span>
                 </div>
               ) : (
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-200 text-gray-500 font-mono text-xs uppercase">
-                      <th className="pb-3 font-semibold">Job Title</th>
-                      <th className="pb-3 font-semibold">Company</th>
-                      <th className="pb-3 font-semibold">Location</th>
-                      <th className="pb-3 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentApplications.map((app, index) => (
-                      <tr key={index} className="border-b border-gray-100 text-gray-900 hover:bg-gray-50/50">
-                        <td className="py-3.5 font-display font-bold">{app.title}</td>
-                        <td className="py-3.5 text-gray-500">{app.company}</td>
-                        <td className="py-3.5 text-xs font-mono text-gray-500">{app.location || 'Remote'}</td>
-                        <td className="py-3.5">
-                          <select
-                            value={app.status}
-                            onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                            className={`text-[10px] font-mono font-bold px-2 py-1 rounded border outline-none cursor-pointer transition-all ${
-                              app.status === 'Hired'
-                                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                : app.status === 'Rejected'
-                                ? 'bg-red-50 border-red-200 text-red-700'
-                                : app.status === 'Shortlisted'
-                                ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                : 'bg-blue-50 border-blue-200 text-blue-700'
-                            }`}
-                          >
-                            <option value="Pending" className="bg-white text-gray-800">Pending</option>
-                            <option value="Shortlisted" className="bg-white text-gray-800">Interviewing</option>
-                            <option value="Hired" className="bg-white text-gray-800">Hired</option>
-                            <option value="Rejected" className="bg-white text-gray-800">Rejected</option>
-                          </select>
-                        </td>
+                <div className="flex-1 overflow-y-auto overflow-x-auto pr-1">
+                  <table className="w-full text-left border-collapse text-sm min-w-[500px]">
+                    <thead className="sticky top-0 bg-white z-10">
+                      <tr className="border-b border-gray-200 text-gray-500 font-mono text-xs uppercase">
+                        <th className="pb-3 font-semibold bg-white">Job Title</th>
+                        <th className="pb-3 font-semibold bg-white">Company</th>
+                        <th className="pb-3 font-semibold bg-white">Location</th>
+                        <th className="pb-3 font-semibold bg-white">Status</th>
+                        <th className="pb-3 font-semibold text-center bg-white">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {recentApplications.map((app, index) => (
+                        <tr key={index} className="border-b border-gray-100 text-gray-900 hover:bg-gray-50/50">
+                          <td className="py-3.5 font-display font-bold">{app.title}</td>
+                          <td className="py-3.5 text-gray-500">{app.company}</td>
+                          <td className="py-3.5 text-xs font-mono text-gray-500">{app.location || 'Remote'}</td>
+                          <td className="py-3.5">
+                            <select
+                              value={app.status}
+                              onChange={(e) => handleStatusChange(app._id, e.target.value)}
+                              className={`text-[10px] font-mono font-bold px-2 py-1 rounded border outline-none cursor-pointer transition-all ${
+                                app.status === 'Hired'
+                                  ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                  : app.status === 'Rejected'
+                                  ? 'bg-red-50 border-red-200 text-red-700'
+                                  : app.status === 'Shortlisted'
+                                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                  : 'bg-blue-50 border-blue-200 text-blue-700'
+                              }`}
+                            >
+                              <option value="Pending" className="bg-white text-gray-800">Pending</option>
+                              <option value="Shortlisted" className="bg-white text-gray-800">Interviewing</option>
+                              <option value="Hired" className="bg-white text-gray-800">Hired</option>
+                              <option value="Rejected" className="bg-white text-gray-800">Rejected</option>
+                            </select>
+                          </td>
+                          <td className="py-3.5 text-center">
+                            <button
+                              onClick={() => handleUntrack(app._id)}
+                              className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                              title="Untrack application"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>

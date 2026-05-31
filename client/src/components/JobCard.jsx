@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, DollarSign, ExternalLink } from 'lucide-react';
 
 const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
-  const isJSearch = job.source === 'jsearch';
+  const isExternal = !!job.applyUrl;
   const matchScore = job.matchScore || 0;
 
   const getScoreColor = (score) => {
@@ -96,20 +96,20 @@ const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
           </div>
         )}
 
-        {isJSearch ? (
+        {isExternal ? (
           <button
             onClick={() => {
               if (!isApplied) {
                 onApply(job._id);
-                window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
               }
+              window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
             }}
-            disabled={isApplied}
             className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded transition-all font-display font-bold text-sm border ${
               isApplied
-                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-transparent border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm'
+                ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100/50'
+                : 'bg-transparent border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm'
             }`}
+            title={isApplied ? "Click to open application link again" : "Apply to this external opening"}
           >
             <span>{isApplied ? 'APPLICATION TRACKED' : 'APPLY'}</span>
             <ExternalLink className="w-4 h-4 text-gray-400" />

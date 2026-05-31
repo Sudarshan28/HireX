@@ -22,5 +22,6 @@ router.put('/profile', verifyToken, validateUpdateProfile, studentController.upd
 
 router.get('/dashboard/stats', verifyToken, studentController.getDashboardStats);
 router.put('/applications/:jobId/status', verifyToken, studentController.updateApplicationStatus);
+router.delete('/applications/:jobId', verifyToken, studentController.untrackApplication);
 
 module.exports = router;

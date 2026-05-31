@@ -450,20 +450,22 @@ const FindJobs = () => {
 
             {/* Actions */}
             <div className="border-t border-gray-100 pt-4">
-              {selectedJob.source === 'jsearch' ? (
+              {selectedJob.applyUrl ? (
                 <button
                   onClick={() => {
-                    handleApply(selectedJob._id);
+                    if (!appliedJobs.includes(selectedJob._id)) {
+                      handleApply(selectedJob._id);
+                    }
                     window.open(selectedJob.applyUrl, '_blank', 'noopener,noreferrer');
                     setSelectedJob(null);
                   }}
-                  disabled={appliedJobs.includes(selectedJob._id)}
                   className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded font-display font-bold text-sm transition-all shadow-sm ${
                     appliedJobs.includes(selectedJob._id)
-                      ? 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100/50'
                       : 'text-white hover:opacity-95'
                   }`}
                   style={!appliedJobs.includes(selectedJob._id) ? { backgroundColor: '#202A36' } : {}}
+                  title={appliedJobs.includes(selectedJob._id) ? "Click to open application link again" : "Apply to this external opening"}
                 >
                   <span>{appliedJobs.includes(selectedJob._id) ? 'APPLICATION TRACKED' : 'APPLY'}</span>
                   <ExternalLink className="w-4 h-4" />

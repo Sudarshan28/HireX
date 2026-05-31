@@ -461,3 +461,36 @@ exports.updateApplicationStatus = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// Untrack/Delete an application from candidate's dashboard
+exports.untrackApplication = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    const student = await Student.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    // 1. Remove student from job's applicants array
+    job.applicants = job.applicants.filter(a => a.student.toString() !== student._id.toString());
+    await job.save();
+
+    // 2. Remove job from student's appliedJobs array
+    student.appliedJobs = student.appliedJobs.filter(id => id.toString() !== jobId.toString());
+    await student.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Application untracked successfully'
+    });
+  } catch (error) {
+    console.error('Error untracking application:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
