@@ -21,17 +21,38 @@ exports.uploadResume = async (req, res) => {
     
     // Validate that the uploaded document is a valid resume or CV
     const lowercaseText = resumeText.toLowerCase();
-    
-    // 1. Text length validation: a valid resume typically has at least 400 characters of text content
-    if (resumeText.trim().length < 400) {
+    const numPages = parsedPdf.numpages || parsedPdf.numPages || 0;
+
+    // 1. Page count validation: resumes are typically 1-3 pages. Block long manuals/reports.
+    if (numPages > 3) {
       try { fs.unlinkSync(req.file.path); } catch (e) {}
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Invalid file contents: The uploaded document is too short to be recognized as a valid resume or CV.' 
+      return res.status(400).json({
+        success: false,
+        message: `Validation failed: The uploaded document has ${numPages} pages. Only resumes or CVs (1-3 pages) are accepted here.`
       });
     }
 
-    // 2. Section headers validation: check for common resume structural sections
+    // 2. Text length validation: a valid resume typically has between 400 and 15,000 characters
+    const textLength = resumeText.trim().length;
+    if (textLength < 400 || textLength > 15000) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({ 
+        success: false, 
+        message: `Validation failed: The document text length (${textLength} characters) is outside the expected range (400 - 15,000 characters) for a resume.` 
+      });
+    }
+
+    // 3. Contact information check: a valid resume must contain a contact email address
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    if (!emailRegex.test(resumeText)) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed: No contact email address was found. A valid resume or CV must contain contact information (email).'
+      });
+    }
+
+    // 4. Section headers validation: check for common resume structural sections
     const resumeKeywords = [
       'experience', 'education', 'skills', 'projects', 'work', 'employment', 
       'history', 'curriculum vitae', 'cv', 'resume', 'activities', 
@@ -41,12 +62,26 @@ exports.uploadResume = async (req, res) => {
     // Count how many structural resume sections/keywords appear in the text
     const keywordMatches = resumeKeywords.filter(keyword => lowercaseText.includes(keyword));
     
-    // If the document contains less than 2 distinct resume-typical sections/keywords, reject it
-    if (keywordMatches.length < 2) {
+    // If the document contains less than 3 distinct resume-typical sections/keywords, reject it
+    if (keywordMatches.length < 3) {
       try { fs.unlinkSync(req.file.path); } catch (e) {}
       return res.status(400).json({
         success: false,
-        message: 'Validation failed: The uploaded document does not appear to be a valid resume or CV (missing standard sections like Education, Experience, or Skills).'
+        message: `Validation failed: Missing standard sections like Education, Experience, or Skills (only ${keywordMatches.length} matching sections found).`
+      });
+    }
+
+    // 5. Exclusion of Academic reports, lab manuals, and assignments
+    const academicKeywords = [
+      'aim:', 'apparatus', 'lab manual', 'procedure', 'experiment', 'assignment', 
+      'roll no', 'submitted to', 'index table', "teacher's signature", 'course name'
+    ];
+    const academicMatches = academicKeywords.filter(keyword => lowercaseText.includes(keyword));
+    if (academicMatches.length >= 2) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed: This file looks like an academic lab manual, report, or assignment and is not a valid resume/CV.'
       });
     }
 
@@ -132,14 +167,56 @@ exports.getMatchedJobs = async (req, res) => {
     }
 
     
+    const mapJobWithRelevance = (job, matchScore = 0) => {
+      let relevance = 0;
+      if (req.query.search) {
+        const searchLower = req.query.search.toLowerCase().trim();
+        const titleLower = (job.title || '').toLowerCase().trim();
+        const companyLower = (job.company || '').toLowerCase().trim();
+        const descLower = (job.description || '').toLowerCase().trim();
+        
+        // Exact match boosts
+        if (titleLower === searchLower) relevance += 10000;
+        if (companyLower === searchLower) relevance += 5000;
+        
+        // Word boundary matches
+        const titleWords = titleLower.split(/\W+/);
+        const companyWords = companyLower.split(/\W+/);
+        if (titleWords.includes(searchLower)) relevance += 2000;
+        if (companyWords.includes(searchLower)) relevance += 1000;
+        
+        // Substring matches
+        if (titleLower.includes(searchLower)) relevance += 500;
+        if (companyLower.includes(searchLower)) relevance += 250;
+        if (descLower.includes(searchLower)) relevance += 50;
+      }
+      
+      if (req.query.location) {
+        const locSearchLower = req.query.location.toLowerCase().trim();
+        const locLower = (job.location || '').toLowerCase().trim();
+        if (locLower === locSearchLower) relevance += 2000;
+        else if (locLower.includes(locSearchLower)) relevance += 1000;
+      }
+      
+      return {
+        ...job.toObject(),
+        matchScore,
+        relevance
+      };
+    };
+    
     if (!student.resumeText || jobs.length === 0) {
       // Default match score of 0
-      const jobsWithScores = jobs.map(j => ({
-        ...j.toObject(),
-        matchScore: 0
-      }));
-      // Sort by postedAt if sortByMatch is false, else no score to sort by
-      if (req.query.sortByMatch === 'false') {
+      const jobsWithScores = jobs.map(j => mapJobWithRelevance(j, 0));
+      
+      if (req.query.search) {
+        jobsWithScores.sort((a, b) => {
+          if (b.relevance !== a.relevance) {
+            return b.relevance - a.relevance;
+          }
+          return new Date(b.postedAt) - new Date(a.postedAt);
+        });
+      } else if (req.query.sortByMatch === 'false') {
         jobsWithScores.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
       }
       return res.status(200).json({ success: true, data: jobsWithScores });
@@ -173,17 +250,28 @@ exports.getMatchedJobs = async (req, res) => {
         rawScore
       );
       
-      return {
-        ...job.toObject(),
-        matchScore
-      };
+      return mapJobWithRelevance(job, matchScore);
     });
 
     // Sort criteria
-    if (req.query.sortByMatch === 'false') {
-      jobsWithScores.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
+    if (req.query.search) {
+      jobsWithScores.sort((a, b) => {
+        // Primary sort: Search relevance
+        if (b.relevance !== a.relevance) {
+          return b.relevance - a.relevance;
+        }
+        // Secondary sort: Match score or post date
+        if (req.query.sortByMatch === 'false') {
+          return new Date(b.postedAt) - new Date(a.postedAt);
+        }
+        return b.matchScore - a.matchScore;
+      });
     } else {
-      jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
+      if (req.query.sortByMatch === 'false') {
+        jobsWithScores.sort((a, b) => new Date(b.postedAt) - new Date(a.postedAt));
+      } else {
+        jobsWithScores.sort((a, b) => b.matchScore - a.matchScore);
+      }
     }
 
     return res.status(200).json({
@@ -297,9 +385,28 @@ exports.getAppliedJobs = async (req, res) => {
 
     const jobs = await Job.find({ _id: { $in: student.appliedJobs } });
     
+    // Auto-cleanup deleted/invalid jobs or jobs where the student is not in applicants
+    const validJobIds = new Set();
+    jobs.forEach(job => {
+      if (job.applicants) {
+        const applicantInfo = job.applicants.find(a => a.student && a.student.toString() === req.user.id.toString());
+        if (applicantInfo) {
+          validJobIds.add(job._id.toString());
+        }
+      }
+    });
+
+    const initialCount = student.appliedJobs.length;
+    student.appliedJobs = student.appliedJobs.filter(id => id && validJobIds.has(id.toString()));
+    if (student.appliedJobs.length !== initialCount) {
+      await student.save();
+    }
+
+    const activeJobs = jobs.filter(j => validJobIds.has(j._id.toString()));
+
     // Map with user application status
-    const appliedJobsList = jobs.map(j => {
-      const applicantInfo = j.applicants.find(a => a.student.toString() === req.user.id.toString());
+    const appliedJobsList = activeJobs.map(j => {
+      const applicantInfo = j.applicants.find(a => a.student && a.student.toString() === req.user.id.toString());
       return {
         ...j.toObject(),
         status: applicantInfo ? applicantInfo.status : 'Pending',
@@ -381,13 +488,32 @@ exports.getDashboardStats = async (req, res) => {
 
     const appliedJobs = await Job.find({ _id: { $in: student.appliedJobs } });
     
+    // Auto-cleanup deleted/invalid jobs or jobs where the student is not in applicants
+    const validJobIds = new Set();
+    appliedJobs.forEach(job => {
+      if (job.applicants) {
+        const applicantInfo = job.applicants.find(a => a.student && a.student.toString() === req.user.id.toString());
+        if (applicantInfo) {
+          validJobIds.add(job._id.toString());
+        }
+      }
+    });
+
+    const initialCount = student.appliedJobs.length;
+    student.appliedJobs = student.appliedJobs.filter(id => id && validJobIds.has(id.toString()));
+    if (student.appliedJobs.length !== initialCount) {
+      await student.save();
+    }
+
+    const activeAppliedJobs = appliedJobs.filter(j => validJobIds.has(j._id.toString()));
+
     let shortlisted = 0;
     let rejected = 0;
     let hired = 0;
     let pending = 0;
 
-    appliedJobs.forEach(job => {
-      const applicantInfo = job.applicants.find(a => a.student.toString() === req.user.id.toString());
+    activeAppliedJobs.forEach(job => {
+      const applicantInfo = job.applicants.find(a => a.student && a.student.toString() === req.user.id.toString());
       if (applicantInfo) {
         const status = applicantInfo.status.toLowerCase();
         if (status === 'shortlisted') shortlisted++;
@@ -403,12 +529,12 @@ exports.getDashboardStats = async (req, res) => {
     let topMatchScore = 75;
     let avgMatchScore = 70;
 
-    if (student.resumeText && appliedJobs.length > 0) {
+    if (student.resumeText && activeAppliedJobs.length > 0) {
       const matcherUrl = process.env.PYTHON_MATCHER_URL || 'http://localhost:5001';
       try {
         const response = await axios.post(`${matcherUrl}/match`, {
           resumeText: student.resumeText,
-          jobs: appliedJobs.map(j => ({ id: j._id, description: j.description || '' }))
+          jobs: activeAppliedJobs.map(j => ({ id: j._id, description: j.description || '' }))
         });
         const ranked = response.data.rankedJobs || [];
         const scores = ranked.map(r => Math.min(Math.max(Math.round(r.score * 100), 0), 100));
@@ -421,15 +547,38 @@ exports.getDashboardStats = async (req, res) => {
       }
     }
 
-    // Applications over time (dummy date chart matching style)
+    // Applications over time (calculated dynamically from actual database entries)
+    const dayCounts = {
+      'Mon': 0,
+      'Tue': 0,
+      'Wed': 0,
+      'Thu': 0,
+      'Fri': 0,
+      'Sat': 0,
+      'Sun': 0
+    };
+    const daysMap = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    activeAppliedJobs.forEach(job => {
+      const applicantInfo = job.applicants.find(a => a.student && a.student.toString() === req.user.id.toString());
+      if (applicantInfo) {
+        const appliedAtDate = applicantInfo.appliedAt || job.postedAt || new Date();
+        const dayIdx = new Date(appliedAtDate).getDay();
+        const dayName = daysMap[dayIdx];
+        if (dayCounts[dayName] !== undefined) {
+          dayCounts[dayName]++;
+        }
+      }
+    });
+
     const applicationsByDay = [
-      { date: 'Mon', count: Math.min(totalApplied, 2) },
-      { date: 'Tue', count: Math.max(0, totalApplied - 4) },
-      { date: 'Wed', count: Math.min(totalApplied, 1) },
-      { date: 'Thu', count: Math.max(0, totalApplied - 3) },
-      { date: 'Fri', count: Math.max(0, totalApplied - 2) },
-      { date: 'Sat', count: 0 },
-      { date: 'Sun', count: 0 },
+      { date: 'Mon', count: dayCounts['Mon'] },
+      { date: 'Tue', count: dayCounts['Tue'] },
+      { date: 'Wed', count: dayCounts['Wed'] },
+      { date: 'Thu', count: dayCounts['Thu'] },
+      { date: 'Fri', count: dayCounts['Fri'] },
+      { date: 'Sat', count: dayCounts['Sat'] },
+      { date: 'Sun', count: dayCounts['Sun'] }
     ];
 
     const statusBreakdown = {

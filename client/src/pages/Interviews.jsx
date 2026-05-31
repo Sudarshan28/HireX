@@ -11,7 +11,7 @@ import {
   ResponsiveContainer, 
   Tooltip 
 } from 'recharts';
-import { Calendar, Video, Clock, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Calendar, Video, Clock, ExternalLink, ShieldCheck, CheckCircle } from 'lucide-react';
 
 const Interviews = () => {
   const [interviews, setInterviews] = useState([]);
@@ -36,8 +36,8 @@ const Interviews = () => {
     fetchInterviews();
   }, []);
 
-  const completedCount = interviews.filter(i => i.isLive === false && Math.random() > 0.5).length; // Simulated completion status
-  const pendingCount = interviews.length - completedCount;
+  const completedCount = interviews.filter(i => i.status?.toLowerCase() === 'hired').length;
+  const pendingCount = interviews.filter(i => i.status?.toLowerCase() === 'shortlisted').length;
 
   const interviewStats = [
     { name: 'Completed', count: completedCount },
@@ -60,7 +60,7 @@ const Interviews = () => {
             </div>
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              {interviews.length} SCHEDULED INTERVIEWS
+              {interviews.filter(i => i.status?.toLowerCase() !== 'hired').length} SCHEDULED INTERVIEWS
             </span>
           </div>
 
@@ -99,7 +99,11 @@ const Interviews = () => {
                 </h3>
                 <p className="text-xs text-gray-500 leading-relaxed">
                   {interviews.length > 0 ? (
-                    `Candidate ${interviews[0].name} exhibits high compatibility on your requirements. Consider prioritizing system design review.`
+                    interviews[0].status?.toLowerCase() === 'hired' ? (
+                      `Hiring process completed. Candidate ${interviews[0].name} exhibits high compatibility on your requirements and was hired successfully.`
+                    ) : (
+                      `Candidate ${interviews[0].name} exhibits high compatibility on your requirements. Consider prioritizing system design review.`
+                    )
                   ) : (
                     "No active candidate vectors detected to generate contextual interview strategies."
                   )}
@@ -137,11 +141,15 @@ const Interviews = () => {
                         <div>
                           <h4 className="font-display font-bold text-gray-900 flex items-center gap-2">
                             <span>{interview.name}</span>
-                            {interview.isLive && (
+                            {interview.status?.toLowerCase() === 'hired' ? (
+                              <span className="text-[9px] font-mono font-bold bg-emerald-50 border border-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded">
+                                COMPLETED
+                              </span>
+                            ) : interview.isLive ? (
                               <span className="text-[9px] font-mono font-bold bg-red-50 border border-red-100 text-red-500 px-1.5 py-0.5 rounded animate-pulse">
                                 LIVE NOW
                               </span>
-                            )}
+                            ) : null}
                           </h4>
                           <p className="text-xs text-gray-500 mt-0.5">{interview.role} — {interview.type}</p>
                           <span className="text-[10px] font-mono text-gray-500 mt-1.5 flex items-center gap-1">
@@ -151,7 +159,12 @@ const Interviews = () => {
                         </div>
                       </div>
 
-                      {interview.isLive ? (
+                      {interview.status?.toLowerCase() === 'hired' ? (
+                        <span className="text-xs font-mono font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded flex items-center gap-1.5">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>HIRED & FEEDBACK LOGGED</span>
+                        </span>
+                      ) : interview.isLive ? (
                         <button className="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-5 rounded text-white font-display font-bold text-xs shadow-sm hover:opacity-95 transition-all" style={{ backgroundColor: '#202A36' }}>
                           <Video className="w-4 h-4" />
                           <span>JOIN SESSION</span>

@@ -58,13 +58,14 @@ const TopNav = () => {
 
   useEffect(() => {
     const loadNotifs = () => {
-      const saved = localStorage.getItem('notifications');
+      const notifKey = user ? `notifications_${user.id || user._id}` : 'notifications_guest';
+      const saved = localStorage.getItem(notifKey);
       if (saved) {
         setNotificationsList(JSON.parse(saved));
       } else {
         const defaults = user?.role === 'recruiter' ? recruiterDefaults : studentDefaults;
         setNotificationsList(defaults);
-        localStorage.setItem('notifications', JSON.stringify(defaults));
+        localStorage.setItem(notifKey, JSON.stringify(defaults));
       }
     };
 
@@ -90,13 +91,14 @@ const TopNav = () => {
     if (nextShow) {
       const updated = notificationsList.map(n => ({ ...n, unread: false }));
       setNotificationsList(updated);
-      localStorage.setItem('notifications', JSON.stringify(updated));
+      const notifKey = user ? `notifications_${user.id || user._id}` : 'notifications_guest';
+      localStorage.setItem(notifKey, JSON.stringify(updated));
       window.dispatchEvent(new Event('new_notification'));
     }
   };
 
   return (
-    <header className="h-16 fixed top-0 left-64 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10">
+    <header className="h-16 fixed top-0 left-64 right-0 bg-white/90 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-30">
       <div>
         <h2 className="font-display text-sm font-bold text-gray-900">
           {getGreeting()}, <span className="text-gray-800 font-semibold">{user?.name || 'Guest'}</span>

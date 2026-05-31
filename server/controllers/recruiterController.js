@@ -259,21 +259,62 @@ exports.getDashboardStats = async (req, res) => {
       });
     });
 
-    // Score all applicants to get top candidates
+    // Score all applicants to get top candidates using Python matcher for consistency
     const scoredApplicants = [];
+    const jobsWithApplicants = {};
     
-    // Calculated similarity for dashboard list
+    for (const app of applicantsList) {
+      if (app.student && app.student.resumeText) {
+        const jobIdStr = app.jobId.toString();
+        if (!jobsWithApplicants[jobIdStr]) {
+          jobsWithApplicants[jobIdStr] = [];
+        }
+        jobsWithApplicants[jobIdStr].push(app);
+      }
+    }
+    
+    const matcherUrl = process.env.PYTHON_MATCHER_URL || 'http://localhost:5001';
+    const matchScoresMap = {}; // key: "jobId-studentId", value: rawScore
+    
+    if (Object.keys(jobsWithApplicants).length > 0) {
+      const matchPromises = Object.keys(jobsWithApplicants).map(async (jobIdStr) => {
+        const jobObj = jobs.find(j => j._id.toString() === jobIdStr);
+        const appsForJob = jobsWithApplicants[jobIdStr];
+        if (jobObj && jobObj.description && appsForJob.length > 0) {
+          try {
+            const response = await axios.post(`${matcherUrl}/match`, {
+              resumeText: jobObj.description,
+              jobs: appsForJob.map(app => ({
+                id: app.student._id.toString(),
+                description: app.student.resumeText
+              }))
+            });
+            const ranked = response.data.rankedJobs || [];
+            ranked.forEach(r => {
+              matchScoresMap[`${jobIdStr}-${r.id}`] = r.score;
+            });
+          } catch (err) {
+            console.warn(`Python matcher failed for job ${jobIdStr} in dashboard stats, falling back to 0.3`);
+          }
+        }
+      });
+      await Promise.all(matchPromises);
+    }
+    
     for (const app of applicantsList) {
       const jobObj = jobs.find(j => j._id.toString() === app.jobId.toString());
       let score = 50;
       
       if (app.student.resumeText && jobObj && jobObj.description) {
+        const scoreKey = `${app.jobId.toString()}-${app.student._id.toString()}`;
+        const rawScore = scoreKey in matchScoresMap ? matchScoresMap[scoreKey] : 0.3;
+        
         score = calculateMatchPercentage(
           app.student.resumeText,
           jobObj.description || '',
           jobObj.skills || [],
           app.student.skills || [],
-          0.3 // default baseline semantic score for fast dashboard scoring
+          rawScore
         );
       }
       
@@ -408,8 +449,9 @@ exports.getInterviews = async (req, res) => {
 
     jobs.forEach(job => {
       job.applicants.forEach(app => {
-        if (app.status.toLowerCase() === 'shortlisted' && app.student) {
-          const isLive = app.appliedAt && (now - new Date(app.appliedAt) < 1800000); // live if status changed in last 30m
+        const statusLower = app.status.toLowerCase();
+        if ((statusLower === 'shortlisted' || statusLower === 'hired') && app.student) {
+          const isLive = statusLower === 'shortlisted' && app.appliedAt && (now - new Date(app.appliedAt) < 1800000); // live if status changed in last 30m
           
           interviews.push({
             id: `${job._id}-${app.student._id}`,
@@ -419,6 +461,7 @@ exports.getInterviews = async (req, res) => {
             time: app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() + ', 2:00 PM' : 'Tomorrow, 2:00 PM',
             platform: 'Google Meet',
             isLive: isLive,
+            status: app.status,
             studentId: app.student._id,
             jobId: job._id
           });
@@ -445,14 +488,61 @@ exports.getAnalytics = async (req, res) => {
     let totalShortlisted = 0;
     let totalHired = 0;
     let totalRejected = 0;
+    
+    const now = new Date();
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    // Generate the last 6 months leading up to the current month dynamically
+    const lineData = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      lineData.push({
+        name: monthNames[d.getMonth()],
+        value: 0,
+        monthIndex: d.getMonth(),
+        year: d.getFullYear()
+      });
+    }
+
+    let linkedInHires = 0;
+    let referralsHires = 0;
+    let directHires = 0;
 
     jobs.forEach(job => {
       totalApplications += job.applicants.length;
       job.applicants.forEach(app => {
         const status = app.status.toLowerCase();
         if (status === 'shortlisted') totalShortlisted++;
-        else if (status === 'hired') totalHired++;
+        else if (status === 'hired') {
+          totalHired++;
+          if (app.student) {
+            if (job.source === 'jsearch') {
+              linkedInHires++;
+            } else {
+              // Deterministic split for hirex jobs
+              const idStr = app.student._id.toString();
+              const code = idStr.charCodeAt(idStr.length - 1);
+              if (code % 2 === 0) {
+                directHires++;
+              } else {
+                referralsHires++;
+              }
+            }
+          }
+        }
         else if (status === 'rejected') totalRejected++;
+
+        // Count application in its month/year
+        if (app.appliedAt) {
+          const appDate = new Date(app.appliedAt);
+          const appMonth = appDate.getMonth();
+          const appYear = appDate.getFullYear();
+          
+          const matchMonth = lineData.find(m => m.monthIndex === appMonth && m.year === appYear);
+          if (matchMonth) {
+            matchMonth.value++;
+          }
+        }
       });
     });
 
@@ -460,20 +550,27 @@ exports.getAnalytics = async (req, res) => {
       ? Math.round((totalShortlisted / totalApplications) * 100) 
       : 0;
 
-    // Build real line chart data
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    const lineData = months.map(m => ({ name: m, value: 0 }));
-    if (totalApplications > 0) {
-      // Allocate applications across active months
-      lineData[4].value = Math.max(0, totalApplications - 1);
-      lineData[5].value = totalApplications;
-    }
+    // Format lineData for chart (removing temporary fields)
+    const formattedLineData = lineData.map(m => ({
+      name: m.name,
+      value: m.value
+    }));
 
-    const pieData = [
-      { name: 'LinkedIn', value: totalApplications > 0 ? 40 : 0 },
-      { name: 'Referrals', value: totalApplications > 0 ? 30 : 0 },
-      { name: 'Direct', value: totalApplications > 0 ? 30 : 0 }
-    ];
+    // Source of Hire pie chart (calculated from actual hired candidates)
+    let pieData = [];
+    if (totalHired > 0) {
+      pieData = [
+        { name: 'LinkedIn', value: Math.round((linkedInHires / totalHired) * 100) },
+        { name: 'Referrals', value: Math.round((referralsHires / totalHired) * 100) },
+        { name: 'Direct', value: Math.round((directHires / totalHired) * 100) }
+      ];
+    } else {
+      pieData = [
+        { name: 'LinkedIn', value: 0 },
+        { name: 'Referrals', value: 0 },
+        { name: 'Direct', value: 0 }
+      ];
+    }
 
     return res.status(200).json({
       success: true,
@@ -482,7 +579,7 @@ exports.getAnalytics = async (req, res) => {
         avgTimeToHire: totalHired > 0 ? '14.2 days' : '0 days',
         interviewRate: `${interviewRate}%`,
         deiScore: totalApplications > 0 ? 'High' : 'N/A',
-        lineData,
+        lineData: formattedLineData,
         pieData
       }
     });

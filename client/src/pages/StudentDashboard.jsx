@@ -22,8 +22,10 @@ import TopNav from '../components/TopNav';
 import StatCard from '../components/StatCard';
 import api from '../api/axios';
 import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
 const StudentDashboard = () => {
+  const { user } = useAuth();
   const [data, setData] = useState({
     totalApplied: 0,
     shortlisted: 0,
@@ -91,7 +93,8 @@ const StudentDashboard = () => {
                 toast.info(`${statusColor} Application status for ${nextApp.title} at ${nextApp.company} updated to ${nextApp.status}!`);
                 
                 // Add to notification drawer
-                const saved = localStorage.getItem('notifications');
+                const notifKey = user ? `notifications_${user.id || user._id}` : 'notifications_guest';
+                const saved = localStorage.getItem(notifKey);
                 let list = [];
                 if (saved) {
                   try { list = JSON.parse(saved); } catch (e) { list = []; }
@@ -103,7 +106,7 @@ const StudentDashboard = () => {
                   time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                   unread: true
                 });
-                localStorage.setItem('notifications', JSON.stringify(list.slice(0, 50)));
+                localStorage.setItem(notifKey, JSON.stringify(list.slice(0, 50)));
                 window.dispatchEvent(new Event('new_notification'));
               }
             });

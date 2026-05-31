@@ -40,7 +40,7 @@ const Sidebar = () => {
   const links = user?.role === 'recruiter' ? recruiterLinks : studentLinks;
 
   return (
-    <aside className="w-64 fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col z-20">
+    <aside className="w-64 fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col z-40">
       {/* Header/Logo */}
       <div className="h-16 flex items-center px-6 border-b border-gray-200 gap-2">
         <div className="w-8 h-8 rounded bg-[#202A36] flex items-center justify-center font-display font-bold text-white shadow-sm">
