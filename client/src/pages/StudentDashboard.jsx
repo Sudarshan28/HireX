@@ -16,11 +16,12 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
-import { FileText, Award, XCircle, CheckCircle, Clock, Calendar, Trash2 } from 'lucide-react';
+import { FileText, Award, XCircle, CheckCircle, Clock, Calendar, Trash2, RefreshCw } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import TopNav from '../components/TopNav';
 import StatCard from '../components/StatCard';
 import api from '../api/axios';
+import { toast } from 'react-toastify';
 
 const StudentDashboard = () => {
   const [data, setData] = useState({
@@ -38,6 +39,31 @@ const StudentDashboard = () => {
   
   const [recentApplications, setRecentApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSyncATS = async () => {
+    try {
+      setSyncing(true);
+      const res = await api.post('/student/sync-emails');
+      if (res.data.success) {
+        const updates = res.data.updates || [];
+        if (updates.length > 0) {
+          updates.forEach(up => {
+            const statusColor = up.newStatus === 'Hired' ? '🟢' : up.newStatus === 'Rejected' ? '🔴' : '🟡';
+            toast.success(`${statusColor} Application for ${up.title} at ${up.company} was updated to ${up.newStatus}!`);
+          });
+        } else {
+          toast.info('Sync complete: No new ATS notifications found in your inbox.');
+        }
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error('Failed to sync applications:', error);
+      toast.error('Sync failed: Could not connect to mail servers.');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   window.updateUIViaAPI = (newData) => {
     console.log('UI updated via API injection:', newData);
@@ -118,9 +144,19 @@ const StudentDashboard = () => {
       <main className="pl-64 pt-16 min-h-screen">
         <div className="p-8 space-y-8">
           {/* Header */}
-          <div>
-            <h1 className="text-3xl font-display font-bold text-gray-900 mb-1">CANDIDATE DASHBOARD</h1>
-            <p className="text-gray-500 font-body text-sm">Real-time vector matching & application intelligence pipeline.</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-display font-bold text-gray-900 mb-1">CANDIDATE DASHBOARD</h1>
+              <p className="text-gray-500 font-body text-sm">Real-time vector matching & application intelligence pipeline.</p>
+            </div>
+            <button
+              onClick={handleSyncATS}
+              disabled={syncing}
+              className="flex items-center gap-2 py-2.5 px-4 rounded text-white font-display font-bold text-xs bg-[#202A36] hover:bg-[#344154] transition-all shadow-sm disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? 'animate-spin' : ''}`} />
+              <span>{syncing ? 'SYNCING INBOX...' : 'SYNC APPLICATIONS'}</span>
+            </button>
           </div>
 
           {/* 6 Stat Cards Grid */}

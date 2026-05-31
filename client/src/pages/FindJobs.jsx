@@ -453,10 +453,9 @@ const FindJobs = () => {
               {selectedJob.applyUrl ? (
                 <button
                   onClick={() => {
-                    if (!appliedJobs.includes(selectedJob._id)) {
-                      handleApply(selectedJob._id);
-                    }
-                    window.open(selectedJob.applyUrl, '_blank', 'noopener,noreferrer');
+                    const separator = selectedJob.applyUrl.includes('?') ? '&' : '?';
+                    const trackingUrl = `${selectedJob.applyUrl}${separator}hirex_job_id=${selectedJob._id}`;
+                    window.open(trackingUrl, '_blank', 'noopener,noreferrer');
                     setSelectedJob(null);
                   }}
                   className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded font-display font-bold text-sm transition-all shadow-sm ${
@@ -465,7 +464,7 @@ const FindJobs = () => {
                       : 'text-white hover:opacity-95'
                   }`}
                   style={!appliedJobs.includes(selectedJob._id) ? { backgroundColor: '#202A36' } : {}}
-                  title={appliedJobs.includes(selectedJob._id) ? "Click to open application link again" : "Apply to this external opening"}
+                  title={appliedJobs.includes(selectedJob._id) ? "Click to open application link again" : "Apply to this external opening (automatically tracked via extension)"}
                 >
                   <span>{appliedJobs.includes(selectedJob._id) ? 'APPLICATION TRACKED' : 'APPLY'}</span>
                   <ExternalLink className="w-4 h-4" />

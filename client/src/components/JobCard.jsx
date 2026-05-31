@@ -99,17 +99,16 @@ const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
         {isExternal ? (
           <button
             onClick={() => {
-              if (!isApplied) {
-                onApply(job._id);
-              }
-              window.open(job.applyUrl, '_blank', 'noopener,noreferrer');
+              const separator = job.applyUrl.includes('?') ? '&' : '?';
+              const trackingUrl = `${job.applyUrl}${separator}hirex_job_id=${job._id}`;
+              window.open(trackingUrl, '_blank', 'noopener,noreferrer');
             }}
             className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded transition-all font-display font-bold text-sm border ${
               isApplied
                 ? 'bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100/50'
                 : 'bg-transparent border border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm'
             }`}
-            title={isApplied ? "Click to open application link again" : "Apply to this external opening"}
+            title={isApplied ? "Click to open application link again" : "Apply to this external opening (automatically tracked via extension)"}
           >
             <span>{isApplied ? 'APPLICATION TRACKED' : 'APPLY'}</span>
             <ExternalLink className="w-4 h-4 text-gray-400" />

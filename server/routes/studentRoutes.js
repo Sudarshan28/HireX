@@ -13,6 +13,8 @@ router.get('/jobs', verifyToken, studentController.getMatchedJobs);
 
 router.post('/apply/:jobId', verifyToken, studentController.applyToJob);
 router.post('/jobs/:jobId/apply', verifyToken, studentController.applyToJob);
+router.post('/apply-external', verifyToken, studentController.applyExternal);
+router.post('/sync-emails', verifyToken, studentController.syncEmails);
 
 router.get('/applied-jobs', verifyToken, studentController.getAppliedJobs);
 router.get('/applications', verifyToken, studentController.getAppliedJobs);

@@ -494,3 +494,157 @@ exports.untrackApplication = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// Apply to an external job (called by Chrome extension)
+exports.applyExternal = async (req, res) => {
+  try {
+    const { jobId } = req.body;
+    const student = await Student.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    // If already applied, return success
+    const alreadyApplied = job.applicants.some(a => a.student.toString() === student._id.toString());
+    if (alreadyApplied) {
+      return res.status(200).json({ success: true, company: job.company, message: 'Already applied' });
+    }
+
+    // Calculate match score
+    let score = 55; // Default score
+    if (student.resumeText) {
+      const matcherUrl = process.env.PYTHON_MATCHER_URL || 'http://localhost:5001';
+      let rawScore = 0.35;
+      try {
+        const response = await axios.post(`${matcherUrl}/match`, {
+          resumeText: student.resumeText,
+          jobs: [{ id: job._id, description: job.description || '' }]
+        });
+        const ranked = response.data.rankedJobs || [];
+        if (ranked.length > 0) {
+          rawScore = ranked[0].score;
+        }
+      } catch (err) {
+        console.warn('Python matcher failed during external apply');
+      }
+      
+      score = calculateMatchPercentage(
+        student.resumeText,
+        job.description || '',
+        job.skills || [],
+        student.skills || [],
+        rawScore
+      );
+    }
+
+    // Track application
+    job.applicants.push({
+      student: student._id,
+      appliedAt: new Date(),
+      status: 'Pending'
+    });
+    await job.save();
+
+    if (!student.appliedJobs.includes(job._id)) {
+      student.appliedJobs.push(job._id);
+      await student.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      company: job.company,
+      message: 'External application tracked successfully'
+    });
+  } catch (error) {
+    console.error('Error tracking external application:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+// Simulated ATS / Email Sync Endpoint
+exports.syncEmails = async (req, res) => {
+  try {
+    const student = await Student.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    const appliedJobs = await Job.find({ _id: { $in: student.appliedJobs } });
+    const updates = [];
+
+    // Loop through applied jobs and simulate incoming ATS emails/notifications
+    for (const job of appliedJobs) {
+      const applicantInfo = job.applicants.find(a => a.student.toString() === student._id.toString());
+      if (applicantInfo && applicantInfo.status === 'Pending') {
+        // Roll dice to simulate status updates
+        const rand = Math.random();
+        let newStatus = 'Pending';
+        let changeReason = '';
+
+        if (rand < 0.35) {
+          newStatus = 'Shortlisted';
+          changeReason = `Shortlisted by ${job.company} for coding test.`;
+        } else if (rand >= 0.35 && rand < 0.60) {
+          newStatus = 'Rejected';
+          changeReason = `Application rejected by ${job.company} after resume screening.`;
+        } else if (rand >= 0.60 && rand < 0.75) {
+          newStatus = 'Hired';
+          changeReason = `Congratulations! Hired by ${job.company}!`;
+        }
+
+        if (newStatus !== 'Pending') {
+          applicantInfo.status = newStatus;
+          await job.save();
+          updates.push({
+            jobId: job._id,
+            title: job.title,
+            company: job.company,
+            oldStatus: 'Pending',
+            newStatus,
+            message: changeReason
+          });
+        }
+      } else if (applicantInfo && applicantInfo.status === 'Shortlisted') {
+        // Interviewing applications status update chance
+        const rand = Math.random();
+        let newStatus = 'Shortlisted';
+        let changeReason = '';
+
+        if (rand < 0.35) {
+          newStatus = 'Hired';
+          changeReason = `Passed interview rounds! Offer extended by ${job.company}.`;
+        } else if (rand >= 0.35 && rand < 0.65) {
+          newStatus = 'Rejected';
+          changeReason = `Rejected by ${job.company} after interview stages.`;
+        }
+
+        if (newStatus !== 'Shortlisted') {
+          applicantInfo.status = newStatus;
+          await job.save();
+          updates.push({
+            jobId: job._id,
+            title: job.title,
+            company: job.company,
+            oldStatus: 'Shortlisted',
+            newStatus,
+            message: changeReason
+          });
+        }
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: updates.length > 0 ? `Discovered ${updates.length} new ATS status updates.` : 'Inbox synced. No new status notifications found.',
+      updates
+    });
+  } catch (error) {
+    console.error('Error syncing emails:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
