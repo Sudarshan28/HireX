@@ -98,10 +98,20 @@ app.use('/api/jobs', jobRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
+  const fs = require('fs');
+  const distPath = path.join(__dirname, '../client/dist');
+  const indexPath = path.join(distPath, 'index.html');
+  
+  if (fs.existsSync(indexPath)) {
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(indexPath);
+    });
+  } else {
+    app.get('/', (req, res) => {
+      res.send('HireX API is running in production mode (separate frontend deployment detected)...');
+    });
+  }
 } else {
   // Root route for development
   app.get('/', (req, res) => {

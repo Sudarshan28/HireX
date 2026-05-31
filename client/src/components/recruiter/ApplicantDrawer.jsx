@@ -222,12 +222,18 @@ const ApplicantDrawer = ({ isOpen, onClose, applicant, job, onStatusChange }) =>
     if (import.meta.env.VITE_API_URL) {
       baseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
     }
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      if (baseUrl.includes('onrender.com') || baseUrl.includes('your-backend-url')) {
-        baseUrl = 'http://localhost:5050';
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname !== 'localhost' && (hostname.includes('render.com') || hostname.includes('onrender.com'))) {
+        if (hostname.includes('backend')) {
+          baseUrl = window.location.origin;
+        } else if (import.meta.env.VITE_API_URL && !import.meta.env.VITE_API_URL.includes('your-backend-url')) {
+          baseUrl = import.meta.env.VITE_API_URL.replace('/api', '');
+        } else {
+          const backendHostname = hostname.replace('frontend', 'backend');
+          baseUrl = `https://${backendHostname}`;
+        }
       }
-    } else if (typeof window !== 'undefined') {
-      baseUrl = window.location.origin;
     }
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
     return `${baseUrl}${cleanUrl}`;
