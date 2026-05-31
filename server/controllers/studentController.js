@@ -17,23 +17,54 @@ exports.uploadResume = async (req, res) => {
 
     const fileBuffer = fs.readFileSync(req.file.path);
     const parsedPdf = await pdfParse(fileBuffer);
-    const resumeText = parsedPdf.text;
+    const resumeText = parsedPdf.text || '';
     
+    // Validate that the uploaded document is a valid resume or CV
+    const lowercaseText = resumeText.toLowerCase();
+    
+    // 1. Text length validation: a valid resume typically has at least 400 characters of text content
+    if (resumeText.trim().length < 400) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid file contents: The uploaded document is too short to be recognized as a valid resume or CV.' 
+      });
+    }
+
+    // 2. Section headers validation: check for common resume structural sections
+    const resumeKeywords = [
+      'experience', 'education', 'skills', 'projects', 'work', 'employment', 
+      'history', 'curriculum vitae', 'cv', 'resume', 'activities', 
+      'coursework', 'certifications', 'languages', 'contact', 'summary'
+    ];
+    
+    // Count how many structural resume sections/keywords appear in the text
+    const keywordMatches = resumeKeywords.filter(keyword => lowercaseText.includes(keyword));
+    
+    // If the document contains less than 2 distinct resume-typical sections/keywords, reject it
+    if (keywordMatches.length < 2) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed: The uploaded document does not appear to be a valid resume or CV (missing standard sections like Education, Experience, or Skills).'
+      });
+    }
+
     // Auto-detect skills
     const detectedSkills = detectSkills(resumeText);
 
     // Save details to the Student document
     const student = await Student.findById(req.user.id);
     if (!student) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
 
     student.resumeUrl = `/uploads/${req.file.filename}`;
     student.resumeText = resumeText;
     
-    // Merge new skills with existing without duplicates
-    const updatedSkillsSet = new Set([...student.skills, ...detectedSkills]);
-    student.skills = Array.from(updatedSkillsSet);
+    // Overwrite candidate's skills with the ones detected in this resume to prevent matching score drift
+    student.skills = detectedSkills;
     
     await student.save();
 
