@@ -103,6 +103,50 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+// Background Simulated ATS Sync Loop
+const Job = require('./models/Job');
+setInterval(async () => {
+  try {
+    const jobs = await Job.find({ "applicants.status": { $in: ["Pending", "Shortlisted"] } });
+    if (jobs.length === 0) return;
+
+    const eligibleJobs = jobs.filter(j => j.applicants.some(a => ["Pending", "Shortlisted"].includes(a.status)));
+    if (eligibleJobs.length === 0) return;
+
+    const randomJob = eligibleJobs[Math.floor(Math.random() * eligibleJobs.length)];
+    const eligibleApplicants = randomJob.applicants.filter(a => ["Pending", "Shortlisted"].includes(a.status));
+    const randomApplicant = eligibleApplicants[Math.floor(Math.random() * eligibleApplicants.length)];
+
+    const oldStatus = randomApplicant.status;
+    let newStatus = oldStatus;
+    const rand = Math.random();
+
+    if (oldStatus === 'Pending') {
+      if (rand < 0.4) {
+        newStatus = 'Shortlisted';
+      } else if (rand >= 0.4 && rand < 0.7) {
+        newStatus = 'Rejected';
+      } else {
+        newStatus = 'Hired';
+      }
+    } else if (oldStatus === 'Shortlisted') {
+      if (rand < 0.5) {
+        newStatus = 'Hired';
+      } else {
+        newStatus = 'Rejected';
+      }
+    }
+
+    if (newStatus !== oldStatus) {
+      randomApplicant.status = newStatus;
+      await randomJob.save();
+      console.log(`[BACKGROUND SYNC] Updated status for applicant in job ${randomJob.title} (${randomJob.company}) from ${oldStatus} to ${newStatus}`);
+    }
+  } catch (err) {
+    console.error('Error in background ATS simulator loop:', err);
+  }
+}, 45000); // run every 45 seconds
+
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });

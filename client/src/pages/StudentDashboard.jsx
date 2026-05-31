@@ -55,7 +55,7 @@ const StudentDashboard = () => {
         } else {
           toast.info('Sync complete: No new ATS notifications found in your inbox.');
         }
-        fetchDashboardData();
+        pollDashboardData(true);
       }
     } catch (error) {
       console.error('Failed to sync applications:', error);
@@ -70,9 +70,9 @@ const StudentDashboard = () => {
     setData(prev => ({ ...prev, ...newData }));
   };
 
-  const fetchDashboardData = async () => {
+  const pollDashboardData = async (silent = true) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const statsRes = await api.get('/student/dashboard/stats');
       if (statsRes.data.success) {
         window.updateUIViaAPI(statsRes.data.data);
@@ -81,12 +81,24 @@ const StudentDashboard = () => {
       // Fetch recent applications
       const appsRes = await api.get('/student/applied-jobs');
       if (appsRes.data.success) {
-        setRecentApplications(appsRes.data.data);
+        const nextApps = appsRes.data.data;
+        setRecentApplications(prevApps => {
+          if (prevApps && prevApps.length > 0 && nextApps && nextApps.length > 0) {
+            nextApps.forEach(nextApp => {
+              const prevApp = prevApps.find(pa => pa._id === nextApp._id);
+              if (prevApp && prevApp.status !== nextApp.status) {
+                const statusColor = nextApp.status === 'Hired' ? '🟢' : nextApp.status === 'Rejected' ? '🔴' : '🟡';
+                toast.info(`${statusColor} Application status for ${nextApp.title} at ${nextApp.company} updated to ${nextApp.status}!`);
+              }
+            });
+          }
+          return nextApps;
+        });
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
@@ -94,7 +106,7 @@ const StudentDashboard = () => {
     try {
       const res = await api.put(`/student/applications/${jobId}/status`, { status: newStatus });
       if (res.data.success) {
-        fetchDashboardData();
+        pollDashboardData(true);
       }
     } catch (error) {
       console.error('Failed to update application status:', error);
@@ -106,7 +118,7 @@ const StudentDashboard = () => {
     try {
       const res = await api.delete(`/student/applications/${jobId}`);
       if (res.data.success) {
-        fetchDashboardData();
+        pollDashboardData(true);
       }
     } catch (error) {
       console.error('Failed to untrack application:', error);
@@ -114,7 +126,13 @@ const StudentDashboard = () => {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    pollDashboardData(false);
+
+    const interval = setInterval(() => {
+      pollDashboardData(true);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const pieData = [

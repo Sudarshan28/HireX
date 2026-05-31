@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, DollarSign, ExternalLink } from 'lucide-react';
 
-const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
+const JobCard = ({ job, onApply, isApplied, onViewDetails, onApplyExternal }) => {
   const isExternal = !!job.applyUrl;
   const matchScore = job.matchScore || 0;
 
@@ -101,7 +101,11 @@ const JobCard = ({ job, onApply, isApplied, onViewDetails }) => {
             onClick={() => {
               const separator = job.applyUrl.includes('?') ? '&' : '?';
               const trackingUrl = `${job.applyUrl}${separator}hirex_job_id=${job._id}`;
-              window.open(trackingUrl, '_blank', 'noopener,noreferrer');
+              if (onApplyExternal) {
+                onApplyExternal({ ...job, trackingUrl });
+              } else {
+                window.open(trackingUrl, '_blank', 'noopener,noreferrer');
+              }
             }}
             className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded transition-all font-display font-bold text-sm border ${
               isApplied

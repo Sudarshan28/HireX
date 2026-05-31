@@ -18,6 +18,31 @@ const FindJobs = () => {
   const toggleSection = (section) => {
     setOpenSection(prev => prev === section ? null : section);
   };
+
+  const [trackingJob, setTrackingJob] = useState(null);
+  const [verifying, setVerifying] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleApplyExternal = (job) => {
+    const targetUrl = job.trackingUrl || `${job.applyUrl}${job.applyUrl.includes('?') ? '&' : '?'}hirex_job_id=${job._id}`;
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    setTrackingJob(job);
+    setVerifying(false);
+    setShowConfirm(false);
+
+    const onFocusBack = () => {
+      setVerifying(true);
+      setTimeout(() => {
+        setVerifying(false);
+        setShowConfirm(true);
+      }, 2500);
+      window.removeEventListener('focus', onFocusBack);
+    };
+
+    setTimeout(() => {
+      window.addEventListener('focus', onFocusBack);
+    }, 1500);
+  };
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -241,6 +266,7 @@ const FindJobs = () => {
                       isApplied={appliedJobs.includes(job._id)}
                       onApply={handleApply}
                       onViewDetails={setSelectedJob}
+                      onApplyExternal={handleApplyExternal}
                     />
                   ))}
                 </div>
@@ -453,9 +479,7 @@ const FindJobs = () => {
               {selectedJob.applyUrl ? (
                 <button
                   onClick={() => {
-                    const separator = selectedJob.applyUrl.includes('?') ? '&' : '?';
-                    const trackingUrl = `${selectedJob.applyUrl}${separator}hirex_job_id=${selectedJob._id}`;
-                    window.open(trackingUrl, '_blank', 'noopener,noreferrer');
+                    handleApplyExternal(selectedJob);
                     setSelectedJob(null);
                   }}
                   className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded font-display font-bold text-sm transition-all shadow-sm ${
@@ -464,7 +488,7 @@ const FindJobs = () => {
                       : 'text-white hover:opacity-95'
                   }`}
                   style={!appliedJobs.includes(selectedJob._id) ? { backgroundColor: '#202A36' } : {}}
-                  title={appliedJobs.includes(selectedJob._id) ? "Click to open application link again" : "Apply to this external opening (automatically tracked via extension)"}
+                  title={appliedJobs.includes(selectedJob._id) ? "Click to open application link again" : "Apply to this external opening (automatically tracked via sync overlay)"}
                 >
                   <span>{appliedJobs.includes(selectedJob._id) ? 'APPLICATION TRACKED' : 'APPLY'}</span>
                   <ExternalLink className="w-4 h-4" />
@@ -490,6 +514,88 @@ const FindJobs = () => {
           </div>
         )}
       </Drawer>
+
+      <style>{`
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes progressWidth {
+          from { width: 0%; }
+          to { width: 100%; }
+        }
+        .animate-scaleIn {
+          animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-progressWidth {
+          animation: progressWidth 3s linear infinite;
+        }
+      `}</style>
+
+      {/* Automated ATS Tracking Overlay */}
+      {trackingJob && (
+        <div className="fixed inset-0 bg-[#202A36]/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white border border-gray-200 shadow-2xl rounded-xl p-8 max-w-md w-full text-center space-y-6 animate-scaleIn">
+            <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto shadow-sm">
+              <RefreshCw className={`w-8 h-8 text-[#202A36] ${verifying || !showConfirm ? 'animate-spin' : ''}`} />
+            </div>
+            
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest block">AUTOMATED ATS SYNC PIPELINE</span>
+              <h3 className="text-xl font-display font-bold text-gray-900">
+                {!showConfirm ? 'MONITORING APPLICATION' : 'VERIFY SUBMISSION'}
+              </h3>
+              <p className="text-xs text-gray-500 font-body max-w-xs mx-auto leading-relaxed">
+                {!showConfirm 
+                  ? `We are monitoring your application progress on ${trackingJob.company}'s external career portal.` 
+                  : `Did you complete and submit your application for ${trackingJob.title} at ${trackingJob.company}?`
+                }
+              </p>
+            </div>
+
+            {/* Verification progress bar */}
+            {!showConfirm && (
+              <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-[#202A36] h-full rounded-full animate-progressWidth"></div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              {showConfirm ? (
+                <>
+                  <button
+                    onClick={() => {
+                      handleApply(trackingJob._id);
+                      setTrackingJob(null);
+                    }}
+                    className="flex-1 py-3 px-4 rounded text-white font-display font-bold text-xs bg-emerald-600 hover:bg-emerald-500 transition-all shadow-sm"
+                  >
+                    YES, TRACK IT
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTrackingJob(null);
+                    }}
+                    className="flex-1 py-3 px-4 rounded text-gray-600 font-display font-bold text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300 transition-all"
+                  >
+                    NO, I CANCELED
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setShowConfirm(true);
+                  }}
+                  className="w-full py-2.5 px-4 rounded text-gray-500 font-mono text-[10px] bg-gray-50 hover:bg-gray-100 transition-all"
+                >
+                  WAITING FOR REDIRECT FOCUS...
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
