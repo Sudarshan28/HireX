@@ -4,6 +4,70 @@ const Student = require('../models/Student');
 const Recruiter = require('../models/Recruiter');
 const { runBackgroundSync } = require('../utils/jsearchFetch');
 
+// Helper to parse user-agent and detect browser and OS
+const parseUserAgent = (uaString) => {
+  if (!uaString) return 'Unknown Device';
+  
+  let browser = 'Unknown Browser';
+  let os = 'Unknown OS';
+  const ua = uaString.toLowerCase();
+  
+  // OS Detection
+  if (ua.includes('android')) {
+    os = 'Android';
+  } else if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) {
+    os = 'iOS';
+  } else if (ua.includes('macintosh') || ua.includes('mac os x') || ua.includes('mac_powerpc')) {
+    os = 'macOS';
+  } else if (ua.includes('windows') || ua.includes('win32')) {
+    os = 'Windows';
+  } else if (ua.includes('linux')) {
+    os = 'Linux';
+  }
+  
+  // Browser Detection
+  if (ua.includes('edg/')) {
+    browser = 'Edge';
+  } else if (ua.includes('opr/') || ua.includes('opera')) {
+    browser = 'Opera';
+  } else if (ua.includes('chrome') || ua.includes('crios')) {
+    browser = 'Chrome';
+  } else if (ua.includes('firefox') || ua.includes('fxios')) {
+    browser = 'Firefox';
+  } else if (ua.includes('safari')) {
+    browser = 'Safari';
+  }
+  
+  const connector = (os === 'Android' || os === 'Windows' || os === 'Linux') ? 'on' : 'from';
+  return `${browser} ${connector} ${os}`;
+};
+
+// Helper to format date as "date, month, and year" (e.g. 01 June 2026)
+const formatLoginDate = (date = new Date()) => {
+  const day = String(date.getDate()).padStart(2, '0');
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const monthName = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${monthName} ${year}`;
+};
+
+// Helper to format time as 12-hour clock (hour, minute, second with AM/PM)
+const formatLoginTime = (date = new Date()) => {
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+  hours = hours % 12;
+  hours = hours ? hours : 12; // 0 should be 12
+  const hoursStr = String(hours).padStart(2, '0');
+  
+  return `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+};
+
 // Register Student
 exports.registerStudent = async (req, res) => {
   try {
@@ -17,13 +81,22 @@ exports.registerStudent = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const uaString = req.headers['user-agent'] || '';
+    const device = parseUserAgent(uaString);
+    const now = new Date();
+
     student = new Student({
       name,
       email,
       password: hashedPassword,
       university,
       graduationYear,
-      role: 'student'
+      role: 'student',
+      lastLogin: {
+        date: formatLoginDate(now),
+        time: formatLoginTime(now),
+        device: device
+      }
     });
 
     await student.save();
@@ -43,7 +116,8 @@ exports.registerStudent = async (req, res) => {
         email: student.email,
         role: student.role,
         university: student.university,
-        graduationYear: student.graduationYear
+        graduationYear: student.graduationYear,
+        lastLogin: student.lastLogin
       },
       message: 'Student registered successfully'
     });
@@ -66,12 +140,21 @@ exports.registerRecruiter = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const uaString = req.headers['user-agent'] || '';
+    const device = parseUserAgent(uaString);
+    const now = new Date();
+
     recruiter = new Recruiter({
       name,
       company,
       email,
       password: hashedPassword,
-      role: 'recruiter'
+      role: 'recruiter',
+      lastLogin: {
+        date: formatLoginDate(now),
+        time: formatLoginTime(now),
+        device: device
+      }
     });
 
     await recruiter.save();
@@ -90,7 +173,8 @@ exports.registerRecruiter = async (req, res) => {
         name: recruiter.name,
         company: recruiter.company,
         email: recruiter.email,
-        role: recruiter.role
+        role: recruiter.role,
+        lastLogin: recruiter.lastLogin
       },
       message: 'Recruiter registered successfully'
     });
@@ -121,6 +205,16 @@ exports.loginStudent = async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    const uaString = req.headers['user-agent'] || '';
+    const device = parseUserAgent(uaString);
+    const now = new Date();
+    student.lastLogin = {
+      date: formatLoginDate(now),
+      time: formatLoginTime(now),
+      device: device
+    };
+    await student.save();
+
     // Trigger JSearch sync in the background automatically (non-blocking)
     runBackgroundSync();
 
@@ -135,7 +229,8 @@ exports.loginStudent = async (req, res) => {
         university: student.university,
         graduationYear: student.graduationYear,
         skills: student.skills,
-        resumeUrl: student.resumeUrl
+        resumeUrl: student.resumeUrl,
+        lastLogin: student.lastLogin
       },
       message: 'Logged in successfully'
     });
@@ -166,6 +261,16 @@ exports.loginRecruiter = async (req, res) => {
       { expiresIn: '7d' }
     );
 
+    const uaString = req.headers['user-agent'] || '';
+    const device = parseUserAgent(uaString);
+    const now = new Date();
+    recruiter.lastLogin = {
+      date: formatLoginDate(now),
+      time: formatLoginTime(now),
+      device: device
+    };
+    await recruiter.save();
+
     // Trigger JSearch sync in the background automatically (non-blocking)
     runBackgroundSync();
 
@@ -177,7 +282,8 @@ exports.loginRecruiter = async (req, res) => {
         name: recruiter.name,
         company: recruiter.company,
         email: recruiter.email,
-        role: recruiter.role
+        role: recruiter.role,
+        lastLogin: recruiter.lastLogin
       },
       message: 'Logged in successfully'
     });
