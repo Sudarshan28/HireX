@@ -84,6 +84,8 @@ exports.registerStudent = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
+    const localDate = req.headers['x-local-date'] || formatLoginDate(now);
+    const localTime = req.headers['x-local-time'] || formatLoginTime(now);
 
     student = new Student({
       name,
@@ -92,11 +94,9 @@ exports.registerStudent = async (req, res) => {
       university,
       graduationYear,
       role: 'student',
-      lastLogin: {
-        date: formatLoginDate(now),
-        time: formatLoginTime(now),
-        device: device
-      }
+      lastLoginDate: localDate,
+      lastLoginTime: localTime,
+      lastLoginDevice: device
     });
 
     await student.save();
@@ -117,7 +117,9 @@ exports.registerStudent = async (req, res) => {
         role: student.role,
         university: student.university,
         graduationYear: student.graduationYear,
-        lastLogin: student.lastLogin
+        lastLoginDate: student.lastLoginDate,
+        lastLoginTime: student.lastLoginTime,
+        lastLoginDevice: student.lastLoginDevice
       },
       message: 'Student registered successfully'
     });
@@ -143,6 +145,8 @@ exports.registerRecruiter = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
+    const localDate = req.headers['x-local-date'] || formatLoginDate(now);
+    const localTime = req.headers['x-local-time'] || formatLoginTime(now);
 
     recruiter = new Recruiter({
       name,
@@ -150,11 +154,9 @@ exports.registerRecruiter = async (req, res) => {
       email,
       password: hashedPassword,
       role: 'recruiter',
-      lastLogin: {
-        date: formatLoginDate(now),
-        time: formatLoginTime(now),
-        device: device
-      }
+      lastLoginDate: localDate,
+      lastLoginTime: localTime,
+      lastLoginDevice: device
     });
 
     await recruiter.save();
@@ -174,7 +176,9 @@ exports.registerRecruiter = async (req, res) => {
         company: recruiter.company,
         email: recruiter.email,
         role: recruiter.role,
-        lastLogin: recruiter.lastLogin
+        lastLoginDate: recruiter.lastLoginDate,
+        lastLoginTime: recruiter.lastLoginTime,
+        lastLoginDevice: recruiter.lastLoginDevice
       },
       message: 'Recruiter registered successfully'
     });
@@ -208,11 +212,9 @@ exports.loginStudent = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
-    student.lastLogin = {
-      date: formatLoginDate(now),
-      time: formatLoginTime(now),
-      device: device
-    };
+    student.lastLoginDate = req.headers['x-local-date'] || formatLoginDate(now);
+    student.lastLoginTime = req.headers['x-local-time'] || formatLoginTime(now);
+    student.lastLoginDevice = device;
     await student.save();
 
     // Trigger JSearch sync in the background automatically (non-blocking)
@@ -230,7 +232,9 @@ exports.loginStudent = async (req, res) => {
         graduationYear: student.graduationYear,
         skills: student.skills,
         resumeUrl: student.resumeUrl,
-        lastLogin: student.lastLogin
+        lastLoginDate: student.lastLoginDate,
+        lastLoginTime: student.lastLoginTime,
+        lastLoginDevice: student.lastLoginDevice
       },
       message: 'Logged in successfully'
     });
@@ -264,11 +268,9 @@ exports.loginRecruiter = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
-    recruiter.lastLogin = {
-      date: formatLoginDate(now),
-      time: formatLoginTime(now),
-      device: device
-    };
+    recruiter.lastLoginDate = req.headers['x-local-date'] || formatLoginDate(now);
+    recruiter.lastLoginTime = req.headers['x-local-time'] || formatLoginTime(now);
+    recruiter.lastLoginDevice = device;
     await recruiter.save();
 
     // Trigger JSearch sync in the background automatically (non-blocking)
@@ -283,7 +285,9 @@ exports.loginRecruiter = async (req, res) => {
         company: recruiter.company,
         email: recruiter.email,
         role: recruiter.role,
-        lastLogin: recruiter.lastLogin
+        lastLoginDate: recruiter.lastLoginDate,
+        lastLoginTime: recruiter.lastLoginTime,
+        lastLoginDevice: recruiter.lastLoginDevice
       },
       message: 'Logged in successfully'
     });

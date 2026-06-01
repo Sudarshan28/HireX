@@ -26,16 +26,14 @@ const recruiterSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Job'
   }],
-  lastLogin: {
-    date: {
-      type: String
-    },
-    time: {
-      type: String
-    },
-    device: {
-      type: String
-    }
+  lastLoginDate: {
+    type: String
+  },
+  lastLoginTime: {
+    type: String
+  },
+  lastLoginDevice: {
+    type: String
   },
   createdAt: {
     type: Date,
