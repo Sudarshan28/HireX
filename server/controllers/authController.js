@@ -84,8 +84,8 @@ exports.registerStudent = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
-    const localDate = req.headers['x-local-date'] || formatLoginDate(now);
-    const localTime = req.headers['x-local-time'] || formatLoginTime(now);
+    const localDate = req.body.localDate || req.headers['x-local-date'] || formatLoginDate(now);
+    const localTime = req.body.localTime || req.headers['x-local-time'] || formatLoginTime(now);
 
     student = new Student({
       name,
@@ -145,8 +145,8 @@ exports.registerRecruiter = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
-    const localDate = req.headers['x-local-date'] || formatLoginDate(now);
-    const localTime = req.headers['x-local-time'] || formatLoginTime(now);
+    const localDate = req.body.localDate || req.headers['x-local-date'] || formatLoginDate(now);
+    const localTime = req.body.localTime || req.headers['x-local-time'] || formatLoginTime(now);
 
     recruiter = new Recruiter({
       name,
@@ -212,8 +212,8 @@ exports.loginStudent = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
-    student.lastLoginDate = req.headers['x-local-date'] || formatLoginDate(now);
-    student.lastLoginTime = req.headers['x-local-time'] || formatLoginTime(now);
+    student.lastLoginDate = req.body.localDate || req.headers['x-local-date'] || formatLoginDate(now);
+    student.lastLoginTime = req.body.localTime || req.headers['x-local-time'] || formatLoginTime(now);
     student.lastLoginDevice = device;
     await student.save();
 
@@ -268,8 +268,8 @@ exports.loginRecruiter = async (req, res) => {
     const uaString = req.headers['user-agent'] || '';
     const device = parseUserAgent(uaString);
     const now = new Date();
-    recruiter.lastLoginDate = req.headers['x-local-date'] || formatLoginDate(now);
-    recruiter.lastLoginTime = req.headers['x-local-time'] || formatLoginTime(now);
+    recruiter.lastLoginDate = req.body.localDate || req.headers['x-local-date'] || formatLoginDate(now);
+    recruiter.lastLoginTime = req.body.localTime || req.headers['x-local-time'] || formatLoginTime(now);
     recruiter.lastLoginDevice = device;
     await recruiter.save();
 

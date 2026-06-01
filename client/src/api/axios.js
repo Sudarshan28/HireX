@@ -49,8 +49,23 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    config.headers['x-local-date'] = getLocalDateString();
-    config.headers['x-local-time'] = getLocalTimeString();
+    
+    const localDate = getLocalDateString();
+    const localTime = getLocalTimeString();
+    
+    config.headers['x-local-date'] = localDate;
+    config.headers['x-local-time'] = localTime;
+    
+    // Inject into body for auth endpoints
+    if (config.method === 'post' && config.url && config.url.includes('/auth/')) {
+      if (typeof config.data === 'object' && config.data !== null) {
+        config.data.localDate = localDate;
+        config.data.localTime = localTime;
+      } else if (!config.data) {
+        config.data = { localDate, localTime };
+      }
+    }
+    
     return config;
   },
   (error) => {
