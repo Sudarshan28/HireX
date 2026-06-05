@@ -7,6 +7,8 @@ const { validateUpdateProfile } = require('../middleware/validation.middleware')
 
 router.post('/resume/upload', verifyToken, upload.single('resume'), studentController.uploadResume);
 router.post('/upload-resume', verifyToken, upload.single('resume'), studentController.uploadResume);
+router.delete('/resume', verifyToken, studentController.deleteResume);
+router.delete('/delete-resume', verifyToken, studentController.deleteResume);
 
 router.get('/matched-jobs', verifyToken, studentController.getMatchedJobs);
 router.get('/jobs', verifyToken, studentController.getMatchedJobs);

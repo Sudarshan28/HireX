@@ -11,7 +11,7 @@ const StudentLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  const { login } = useAuth();
+  const { login, isProfileComplete } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,7 +27,7 @@ const StudentLogin = () => {
       if (res.data.success) {
         login(res.data.data, res.data.token);
         toast.success('Initialize Session Successful!');
-        navigate('/student/dashboard');
+        navigate('/profile');
       }
     } catch (err) {
       console.error(err);

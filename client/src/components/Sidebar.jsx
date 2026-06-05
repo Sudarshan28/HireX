@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -15,6 +15,7 @@ import {
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -51,6 +52,17 @@ const Sidebar = () => {
 
   const links = user?.role === 'recruiter' ? recruiterLinks : studentLinks;
 
+  const isLinkActive = (linkPath) => {
+    const currentPath = location.pathname;
+    if (linkPath === '/student/profile' || linkPath === '/profile') {
+      return currentPath === '/student/profile' || currentPath === '/profile';
+    }
+    if (linkPath === '/student/dashboard' || linkPath === '/dashboard') {
+      return currentPath === '/student/dashboard' || currentPath === '/dashboard';
+    }
+    return currentPath === linkPath;
+  };
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -80,9 +92,9 @@ const Sidebar = () => {
               key={link.name}
               to={link.path}
               onClick={() => setIsOpen(false)}
-              className={({ isActive }) =>
+              className={
                 `flex items-center gap-3 px-4 py-3 rounded-lg font-body text-sm font-medium transition-all ${
-                  isActive
+                  isLinkActive(link.path)
                     ? 'bg-gray-100 text-gray-900 border border-gray-200'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-transparent'
                 }`

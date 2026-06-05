@@ -41,7 +41,7 @@ const StudentRegister = () => {
       if (res.data.success) {
         login(res.data.data, res.data.token);
         toast.success('Initialize Account Successful!');
-        navigate('/student/dashboard');
+        navigate('/profile');
       }
     } catch (err) {
       console.error(err);

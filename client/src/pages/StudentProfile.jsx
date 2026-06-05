@@ -71,7 +71,15 @@ const StudentProfile = () => {
   const handleUploadSuccess = (data) => {
     setSkills(data.skills);
     setResumeUrl(data.resumeUrl);
+    updateUser(data);
     toast.success('Resume parsed and skills calibrated successfully!');
+  };
+
+  const handleDeleteSuccess = (data) => {
+    setResumeUrl('');
+    setSkills(data.skills || []);
+    updateUser(data);
+    toast.success('Resume deleted and profile updated successfully!');
   };
 
   const handleAddSkill = (e) => {
@@ -186,7 +194,21 @@ const StudentProfile = () => {
             </div>
 
             {/* Resume Upload Section */}
-            <div className="bg-white border border-gray-200 shadow-sm rounded-xl p-8 space-y-6 flex flex-col justify-between">
+            <div className={`relative rounded-xl p-8 space-y-6 flex flex-col justify-between transition-all duration-300 ${
+              !resumeUrl
+                ? 'bg-white border border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.1)] hover:shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+                : 'bg-white border border-gray-200 shadow-sm'
+            }`}>
+              {!resumeUrl && (
+                <div className="absolute -top-3 right-4 bg-amber-500 text-white text-[10px] font-mono font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm animate-pulse">
+                  Required
+                </div>
+              )}
+              {resumeUrl && (
+                <div className="absolute -top-3 right-4 bg-emerald-500 text-white text-[10px] font-mono font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                  Active
+                </div>
+              )}
               <div>
                 <h3 className="text-lg font-display font-bold text-gray-900 border-b border-gray-100 pb-4 mb-4">
                   Resume Vector
@@ -194,7 +216,11 @@ const StudentProfile = () => {
                 <p className="text-xs text-gray-500 font-body mb-6 leading-relaxed">
                   Upload a PDF resume to allow the platform to auto-detect skills and generate vector-based job compatibility scores.
                 </p>
-                <ResumeUpload onUploadSuccess={handleUploadSuccess} />
+                <ResumeUpload 
+                  resumeUrl={resumeUrl}
+                  onUploadSuccess={handleUploadSuccess} 
+                  onDeleteSuccess={handleDeleteSuccess}
+                />
               </div>
 
               {resumeUrl && (

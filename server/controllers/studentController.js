@@ -842,3 +842,48 @@ exports.syncEmails = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
+
+// Delete resume
+exports.deleteResume = async (req, res) => {
+  try {
+    const path = require('path');
+    const student = await Student.findById(req.user.id);
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+
+    if (student.resumeUrl) {
+      const filePath = path.join(__dirname, '..', student.resumeUrl);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (err) {
+          console.error('Error deleting physical resume file:', err);
+        }
+      }
+    }
+
+    student.resumeUrl = undefined;
+    student.resumeText = undefined;
+    
+    await student.save();
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        role: 'student',
+        university: student.university,
+        graduationYear: student.graduationYear,
+        skills: student.skills,
+        resumeUrl: student.resumeUrl
+      },
+      message: 'Resume deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting resume:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

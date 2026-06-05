@@ -51,7 +51,23 @@ function App() {
             } 
           />
           <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute roleRequired="student">
+                <StudentDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
             path="/student/profile" 
+            element={
+              <ProtectedRoute roleRequired="student">
+                <StudentProfile />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
             element={
               <ProtectedRoute roleRequired="student">
                 <StudentProfile />

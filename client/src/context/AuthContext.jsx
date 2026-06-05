@@ -41,8 +41,14 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const isProfileComplete = (u = user) => {
+    if (!u) return false;
+    if (u.role !== 'student') return true;
+    return !!(u.resumeUrl && u.skills && u.skills.length > 0);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, isAuthenticated: !!token, updateUser: setUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, isAuthenticated: !!token, updateUser: setUser, isProfileComplete }}>
       {children}
     </AuthContext.Provider>
   );
