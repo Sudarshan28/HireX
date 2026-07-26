@@ -1,43 +1,45 @@
-<h1 align="center">🚀 HireX</h1>
+<div align="center">
+
+# 🚀 HireX
+
+### Smart Recruitment System with AI Resume Matching
+
+HireX is a full-stack MERN application that helps students discover relevant job opportunities and enables recruiters to identify the most suitable candidates using AI-assisted resume analysis and compatibility scoring.
 
 <p align="center">
-  <b>Smart Recruitment System with AI-Powered Resume Matching</b>
-</p>
 
-<p align="center">
-HireX is a full-stack MERN application that streamlines the recruitment process for students and recruiters using AI-driven resume analysis, intelligent job matching, and recruiter analytics.
-</p>
-
-<p align="center">
-
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
-![NodeJS](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express)
 ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)
-![Gemini AI](https://img.shields.io/badge/Gemini-AI-blue?style=for-the-badge)
+![Gemini AI](https://img.shields.io/badge/Google-Gemini-blue?style=for-the-badge)
 ![JWT](https://img.shields.io/badge/JWT-Authentication-orange?style=for-the-badge)
 ![Render](https://img.shields.io/badge/Render-Deployed-46E3B7?style=for-the-badge)
 
 </p>
 
----
+<p align="center">
 
-# 📌 Overview
+🌐 **Live Demo:** https://hirex-frontend-hhbv.onrender.com/
 
-Hiring the right candidate is often time-consuming due to manual resume screening and inefficient job matching.
+📂 **Repository:** https://github.com/Sudarshan28/HireX
+</p>
 
-HireX solves this problem by providing an AI-assisted recruitment platform where:
-
-- 🎓 Students receive personalized job recommendations based on their resumes.
-- 👨‍💼 Recruiters discover the best candidates using AI compatibility scores.
-- 🤖 Gemini AI extracts skills and experience automatically from uploaded resumes.
-- 📊 Interactive dashboards help both students and recruiters make informed decisions.
-
-The platform focuses on making recruitment faster, smarter, and more transparent.
+</div>
 
 ---
 
-# ✨ Key Features
+# 📖 Overview
+
+Recruitment platforms often rely on manual resume screening, making the hiring process slow and inefficient.
+
+HireX simplifies this process by using AI to understand resumes, extract meaningful information, compare candidate profiles with job requirements, and recommend suitable opportunities.
+
+The platform provides dedicated portals for both students and recruiters, helping reduce manual effort while improving recruitment efficiency.
+
+---
+
+# ✨ Features
 
 ## 👨‍🎓 Student Portal
 
@@ -46,153 +48,154 @@ The platform focuses on making recruitment faster, smarter, and more transparent
 - Resume Upload (PDF)
 - AI Resume Parsing
 - Automatic Skill Extraction
-- Education & Experience Detection
-- AI Job Matching
+- AI Job Recommendations
 - Compatibility Score
-- AI-generated Resume Analysis
+- AI Resume Insights
 - One-click Job Application
 - Application Tracking
 - Dashboard Analytics
-- Skill Radar Chart
-- Application Status Overview
+- Skill Visualization
 
 ---
 
 ## 👩‍💼 Recruiter Portal
 
-- Recruiter Authentication
-- Create Job Posts
-- Manage Job Listings
+- Secure Recruiter Authentication
+- Create & Manage Job Listings
+- View Applicants
 - AI Candidate Ranking
-- Gold / Silver / Bronze Candidate Labels
-- Candidate Profile Drawer
+- Candidate Compatibility Score
 - Skill Gap Analysis
-- Candidate Status Management
-- Hiring Analytics Dashboard
-- Hiring Funnel Visualization
-- Applicant Statistics
+- Update Hiring Status
+- Recruiter Dashboard
+- Hiring Analytics
 
 ---
 
-# 🧠 AI Features
+# 🧠 AI Resume Matching
 
-HireX uses **Google Gemini AI** to provide intelligent recruitment capabilities.
+HireX uses **Google Gemini AI** to analyse uploaded resumes and compare them with job requirements.
 
-### AI Resume Parsing
+The AI pipeline performs:
 
-- Extract Skills
-- Extract Education
-- Extract Experience
-- Resume Understanding
+- Resume understanding
+- Skill extraction
+- Experience extraction
+- Education extraction
+- Candidate profiling
+- Job compatibility scoring
+- Explainable AI insights
 
-### AI Matching
-
-- Candidate vs Job Comparison
-- Compatibility Score Generation
-- Explainable AI Analysis
-- Skill Gap Identification
-- Personalized Job Recommendations
+Instead of manually reviewing every resume, recruiters receive ranked applicants with compatibility scores, helping them identify suitable candidates more efficiently.
 
 ---
 
-# 📷 Screenshots
+# 📸 Application Preview
 
-> Replace these placeholders with screenshots after uploading them to your repository.
+> Replace these placeholder images with screenshots from your project.
 
-## Landing Page
-
-![Landing](assets/screenshots/home.png)
-
----
-
-## Student Dashboard
-
-![Student Dashboard](assets/screenshots/student-dashboard.png)
-
----
-
-## Recruiter Dashboard
-
-![Recruiter Dashboard](assets/screenshots/recruiter-dashboard.png)
-
----
-
-## AI Resume Analysis
-
-![Resume Analysis](assets/screenshots/resume-analysis.png)
-
----
-
-## Applicant Ranking
-
-![Applicant Ranking](assets/screenshots/ranking.png)
-
----
-
-## Analytics Dashboard
-
-![Analytics](assets/screenshots/analytics.png)
-
----
-
-# 🏗️ System Architecture
+## 🏠 Landing Page
 
 ```text
-                    +----------------------+
-                    |      React App       |
-                    |   (Student Portal)   |
-                    +----------+-----------+
-                               |
-                               |
-                    REST API Requests
-                               |
-                               ▼
-                    +----------------------+
-                    |    Express Server    |
-                    +----------+-----------+
-                               |
-        +----------------------+----------------------+
-        |                                             |
-        ▼                                             ▼
-+---------------------+                  +-----------------------+
-|    MongoDB Atlas    |                  |    Google Gemini AI   |
-|  Users • Jobs • DB  |                  | Resume Intelligence   |
-+---------------------+                  +-----------------------+
+assets/screenshots/home.png
 ```
 
 ---
 
-# 🛠️ Tech Stack
+## 👨‍🎓 Student Dashboard
+
+```text
+assets/screenshots/student-dashboard.png
+```
+
+---
+
+## 👩‍💼 Recruiter Dashboard
+
+```text
+assets/screenshots/recruiter-dashboard.png
+```
+
+---
+
+## 📄 Resume Upload & AI Analysis
+
+```text
+assets/screenshots/resume-analysis.png
+```
+
+---
+
+## 📊 Analytics Dashboard
+
+```text
+assets/screenshots/analytics.png
+```
+
+---
+
+## 🥇 Applicant Ranking
+
+```text
+assets/screenshots/ranking.png
+```
+
+---
+
+# 🏗 System Architecture
+
+```text
+                         React + Vite
+                    (Student / Recruiter UI)
+                              │
+                              │ REST API
+                              ▼
+                   Node.js + Express Server
+                              │
+         ┌────────────────────┴────────────────────┐
+         │                                         │
+         ▼                                         ▼
+ MongoDB Atlas                           Google Gemini AI
+(User Data & Jobs)                  (Resume Intelligence)
+```
+
+---
+
+# 🛠 Tech Stack
 
 | Category | Technologies |
-|-----------|--------------|
-| Frontend | React 18, Vite, Tailwind CSS |
+|----------|--------------|
+| Frontend | React, Vite, Tailwind CSS |
 | Backend | Node.js, Express.js |
 | Database | MongoDB Atlas, Mongoose |
 | AI | Google Gemini API |
-| Authentication | JWT Access Token, JWT Refresh Token |
-| File Upload | Multer |
-| Resume Parsing | pdf-parse |
+| Authentication | JWT |
 | State Management | Zustand |
 | Charts | Recharts |
 | Animation | Framer Motion |
+| File Upload | Multer |
+| Resume Parsing | pdf-parse |
+| API Testing | Postman |
+| Version Control | Git & GitHub |
 | Deployment | Render |
 
 ---
 
-# 📁 Project Structure
+# 📂 Project Structure
 
 ```text
 HireX
 │
 ├── client
-│   ├── src
 │   ├── public
+│   ├── src
+│   │
 │   ├── components
 │   ├── pages
 │   ├── hooks
+│   ├── store
 │   ├── services
-│   └── store
+│   └── assets
 │
 ├── server
 │   ├── controllers
@@ -200,11 +203,8 @@ HireX
 │   ├── models
 │   ├── routes
 │   ├── services
-│   ├── utils
-│   └── config
-│
-├── assets
-│   └── screenshots
+│   ├── config
+│   └── utils
 │
 ├── render.yaml
 ├── package.json
@@ -213,59 +213,60 @@ HireX
 
 ---
 
-# ⭐ Project Highlights
+# ⭐ Highlights
 
-- ✅ Full Stack MERN Application
-- ✅ AI-Powered Resume Analysis
-- ✅ Intelligent Job Matching
-- ✅ Recruiter Analytics Dashboard
-- ✅ JWT Authentication
-- ✅ Resume Upload System
-- ✅ AI Compatibility Scores
-- ✅ Responsive User Interface
-- ✅ MongoDB Atlas Integration
-- ✅ Google Gemini AI Integration
-- ✅ Production Deployment on Render
+- Full Stack MERN Project
+- AI Resume Analysis
+- Smart Job Matching
+- Resume Upload System
+- Recruiter Dashboard
+- Interactive Analytics
+- JWT Authentication
+- MongoDB Atlas Integration
+- Responsive User Interface
+- Production Deployment
 
 ---
 
-# 🔥 Why HireX?
+# 💡 Why HireX?
 
-Unlike traditional recruitment systems, HireX introduces AI-assisted hiring by automatically understanding resumes, identifying skills, comparing candidates against job descriptions, and recommending the most suitable opportunities.
+HireX focuses on making recruitment smarter by combining modern web technologies with AI-assisted resume analysis.
 
-The platform reduces manual screening effort while improving hiring accuracy through intelligent compatibility scoring.
+Students receive personalised job recommendations based on their resumes, while recruiters can quickly identify strong candidates using compatibility scores instead of manually reviewing every application.
+
+The result is a faster, more organised, and data-driven recruitment experience for both sides.
 
 ---
 
 # 🚀 Getting Started
 
-Follow these steps to run HireX locally.
+Follow these steps to run HireX on your local machine.
 
 ---
 
-## Prerequisites
+## 📋 Prerequisites
 
-Before you begin, make sure you have:
+Make sure the following software is installed:
 
 - Node.js (v18 or later)
 - npm
+- Git
 - MongoDB Atlas Account
 - Google Gemini API Key
-- Git
 
 ---
 
-## 1️⃣ Clone the Repository
+## 📥 Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/HireX.git
+git clone https://github.com/Sudarshan28/HireX.git
 
 cd HireX
 ```
 
 ---
 
-## 2️⃣ Install Dependencies
+## 📦 Install Dependencies
 
 Install all frontend and backend dependencies.
 
@@ -275,11 +276,13 @@ npm run install:all
 
 ---
 
-## 3️⃣ Configure Environment Variables
+# ⚙️ Environment Variables
 
-### Server
+Create the following environment files before running the application.
 
-Create a `.env` file inside the **server** folder.
+---
+
+## Server (.env)
 
 ```env
 PORT=5000
@@ -297,9 +300,7 @@ CLIENT_URL=http://localhost:5173
 
 ---
 
-### Client
-
-Create a `.env` file inside the **client** folder.
+## Client (.env)
 
 ```env
 VITE_API_URL=http://localhost:5000
@@ -307,7 +308,9 @@ VITE_API_URL=http://localhost:5000
 
 ---
 
-## 4️⃣ Run the Project
+# ▶️ Run the Project
+
+Start both frontend and backend.
 
 ```bash
 npm run dev
@@ -329,21 +332,21 @@ http://localhost:5000
 
 # 🔐 Authentication
 
-HireX uses **JWT Authentication**.
+HireX uses **JSON Web Tokens (JWT)** for secure authentication.
 
-Features include:
+### Features
 
 - User Registration
 - Secure Login
-- Access Tokens
-- Refresh Tokens
 - Protected Routes
+- Access Token Authentication
+- Refresh Token Support
 - Role-based Authorization
 
-Supported Roles
+### Supported Roles
 
-- Student
-- Recruiter
+- 👨‍🎓 Student
+- 👩‍💼 Recruiter
 
 ---
 
@@ -353,30 +356,30 @@ Supported Roles
 Upload Resume (PDF)
         │
         ▼
-PDF Parsing
+Resume Parsing
+(pdf-parse)
         │
         ▼
-Gemini AI Processing
+Google Gemini AI
         │
         ▼
 Extract Skills
-Education
-Experience
-Projects
+Extract Education
+Extract Experience
         │
         ▼
-Generate Candidate Profile
-        │
-        ▼
-Compare with Jobs
+Candidate Profile
         │
         ▼
 AI Compatibility Score
+        │
+        ▼
+Recommended Jobs
 ```
 
 ---
 
-# 📊 Recruiter Workflow
+# 👩‍💼 Recruitment Workflow
 
 ```text
 Recruiter Login
@@ -388,13 +391,13 @@ Create Job Posting
 Students Apply
         │
         ▼
-AI Scores Every Applicant
+AI Evaluates Applications
         │
         ▼
-Rank Candidates
+Compatibility Score
         │
         ▼
-Review Skill Gaps
+Candidate Ranking
         │
         ▼
 Shortlist / Reject / Hire
@@ -408,9 +411,9 @@ Shortlist / Reject / Hire
 
 | Method | Endpoint | Description |
 |---------|----------|-------------|
-| POST | `/api/auth/register` | Register User |
-| POST | `/api/auth/login` | Login User |
-| POST | `/api/auth/refresh` | Refresh Token |
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/refresh` | Refresh Access Token |
 | GET | `/api/auth/me` | Get Current User |
 
 ---
@@ -445,70 +448,44 @@ Shortlist / Reject / Hire
 
 # 🌍 Deployment
 
-HireX is configured for deployment on **Render**.
+HireX is deployed using **Render**.
 
-## Blueprint Deployment
+### Deployment Steps
 
-1. Push your repository to GitHub
-2. Open Render Dashboard
-3. Create a Blueprint
-4. Connect your repository
-5. Render automatically detects `render.yaml`
-6. Add environment variables
-7. Deploy
-
----
-
-## Manual Deployment
-
-Update frontend environment variable.
-
-```env
-VITE_API_URL=https://your-backend.onrender.com
-```
-
-Build the project.
-
-```bash
-npm run build
-```
-
-Deploy backend as a Render Web Service.
+1. Push the repository to GitHub.
+2. Connect the repository to Render.
+3. Configure all required environment variables.
+4. Deploy the backend service.
+5. Deploy the frontend.
+6. Verify API connectivity.
 
 ---
 
-# 📈 Future Improvements
+# 📌 Future Improvements
 
-- AI Resume Feedback
-- Interview Scheduling
+The following enhancements are planned for future versions:
+
 - Email Notifications
-- Company Profiles
-- Resume Templates
-- Resume Builder
-- Multi-language Support
-- AI Chatbot Assistant
-- Mobile Application
-- Calendar Integration
-- Interview Feedback System
-- Admin Dashboard
-- Resume Version History
-- Notification Center
+- Resume Feedback
+- Improved Search & Filters
+- Better Analytics
+- Performance Optimisation
+- Enhanced UI & Accessibility
 
 ---
 
 # 🧪 Testing
 
-The application has been tested for:
+The application has been manually tested for:
 
 - Authentication
-- Protected Routes
 - Resume Upload
 - AI Resume Parsing
-- Job Matching
+- Job Applications
+- Recruiter Dashboard
 - Candidate Ranking
-- Dashboard Analytics
-- MongoDB Integration
-- Responsive Design
+- API Endpoints (Postman)
+- Responsive Layout
 
 ---
 
@@ -516,47 +493,42 @@ The application has been tested for:
 
 Contributions are welcome.
 
-### Fork the repository
+1. Fork this repository.
+
+2. Create a new branch.
 
 ```bash
-git fork
+git checkout -b feature/your-feature
 ```
 
-Create a feature branch.
+3. Commit your changes.
 
 ```bash
-git checkout -b feature/new-feature
+git commit -m "feat: add new feature"
 ```
 
-Commit your changes.
+4. Push the branch.
 
 ```bash
-git commit -m "feat: add awesome feature"
+git push origin feature/your-feature
 ```
 
-Push your branch.
-
-```bash
-git push origin feature/new-feature
-```
-
-Open a Pull Request.
+5. Open a Pull Request.
 
 ---
 
 # 📜 License
 
-This project is licensed under the **MIT License**.
-
-Feel free to use, modify, and distribute this project.
+This project is licensed under the MIT License.
 
 ---
 
-# 🙌 Acknowledgements
+# 🙏 Acknowledgements
 
-Special thanks to the open-source community and the technologies that made this project possible.
+This project was built using:
 
 - React
+- Vite
 - Node.js
 - Express.js
 - MongoDB Atlas
@@ -565,17 +537,12 @@ Special thanks to the open-source community and the technologies that made this 
 - Zustand
 - Recharts
 - Framer Motion
+- Multer
+- pdf-parse
 - Render
+- Postman
 
----
-
-# ⭐ Support
-
-If you found this project useful,
-
-please consider giving it a ⭐ on GitHub.
-
-It helps others discover the project and motivates future development.
+A big thanks to the open-source community for the amazing tools and libraries.
 
 ---
 
@@ -583,25 +550,21 @@ It helps others discover the project and motivates future development.
 
 **Sudarshan Gupta**
 
-B.Tech Computer Science (AI & ML)
+B.Tech Computer Science & Engineering (Artificial Intelligence & Machine Learning)
 
-JSS Academy of Technical Education, Noida
+**JSS University, Noida**
 
-GitHub:
-https://github.com/Sudarshan28
+📧 Email: sidpro9435@gmail.com
 
-LinkedIn:
-(Add your LinkedIn profile)
+🐙 GitHub: https://github.com/Sudarshan28
 
-Email:
-sidpro9435@gmail.com
-
+💼 LinkedIn: https://www.linkedin.com/in/sudarshan-gupta-601b2b324/
 ---
 
-<p align="center">
+<div align="center">
 
-Made with ❤️ using React, Node.js, MongoDB & Gemini AI
+### ⭐ If you found this project helpful, consider giving it a star!
 
-⭐ If you like this project, don't forget to star the repository!
+Made with ❤️ by **Sudarshan Gupta**
 
-</p>
+</div>
